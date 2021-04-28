@@ -39,3 +39,9 @@
 10. Run `oc get route/node-express-app` to get the URL for your app.
 
 ## Lab 2: Build, Bake, and Deploy App in GitHub Actions
+
+## Lab 3: Deploy Nexus, SonarQube
+
+## Lab 4: Container Scanning & E2E Testing
+
+## Lab 5: Operators & GitOps with Argo CD
