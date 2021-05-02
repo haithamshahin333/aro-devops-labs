@@ -40,6 +40,10 @@
 
 ## Lab 2: Build, Bake, and Deploy App in GitHub Actions
 
+### Deploy Openshift Resources with Helm Chart
+
+
+
 ## Lab 3: Deploy Nexus, SonarQube
 
 ## Lab 4: Container Scanning & E2E Testing

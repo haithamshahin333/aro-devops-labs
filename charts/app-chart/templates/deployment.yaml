@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ .Values.appName }}
+    app.kubernetes.io/component: {{ .Values.appName }}
+    app.kubernetes.io/instance: {{ .Values.appName }}
+  name: {{ .Values.appName }}
+spec:
+  selector:
+    matchLabels:
+      deployment: {{ .Values.appName }}
+  replicas: {{ .Values.replicaCount }}
+  template:
+    metadata:
+      labels:
+        deployment: {{ .Values.appName }}
+    spec:
+      containers:
+      - name: {{ .Values.appName }}
+        image: {{ .Values.appName }}:latest
+        env:
+        - name: PORT
+          value: "{{ .Values.targetPort }}"
+        ports:
+        - containerPort: {{ .Values.targetPort }}
