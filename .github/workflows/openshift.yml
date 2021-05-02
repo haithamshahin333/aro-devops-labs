@@ -75,4 +75,4 @@ jobs:
 
       - name: Start oc S2I build
         run: |
-          oc start-build ${{ env.APP_NAME }} --from-dir=${{ env.SOURCE_DIR }}
+          oc start-build ${{ env.APP_NAME }} --from-dir=${{ env.SOURCE_DIR }} --follow
