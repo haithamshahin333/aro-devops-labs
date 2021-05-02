@@ -1,6 +1,8 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  annotations:
+    image.openshift.io/triggers: '[{"from":{"kind":"ImageStreamTag","name":"{{ .Values.appName }}:latest"},"fieldPath":"spec.template.spec.containers[?(@.name==\"{{ .Values.appName }}\")].image"}]'
   labels:
     app: {{ .Values.appName }}
     app.kubernetes.io/component: {{ .Values.appName }}
