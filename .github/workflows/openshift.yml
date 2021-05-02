@@ -64,15 +64,15 @@ jobs:
       - run: npm test
         working-directory: ${{ env.SOURCE_DIR }}
 
-    # https://github.com/redhat-actions/oc-login#readme
-    - name: Log in to OpenShift
-      uses: redhat-actions/oc-login@v1
-      with:
-        openshift_server_url: ${{ secrets.OPENSHIFT_SERVER }}
-        openshift_token: ${{ secrets.OPENSHIFT_TOKEN }}
-        insecure_skip_tls_verify: false
-        namespace: ${{ secrets.OPENSHIFT_NAMESPACE }}
+      # https://github.com/redhat-actions/oc-login#readme
+      - name: Log in to OpenShift
+        uses: redhat-actions/oc-login@v1
+        with:
+          openshift_server_url: ${{ secrets.OPENSHIFT_SERVER }}
+          openshift_token: ${{ secrets.OPENSHIFT_TOKEN }}
+          insecure_skip_tls_verify: false
+          namespace: ${{ secrets.OPENSHIFT_NAMESPACE }}
 
-    - name: Start oc S2I build
-      run: |
-        oc start-build ${{ env.APP_NAME }} --from-dir=${{ env.SOURCE_DIR }}
+      - name: Start oc S2I build
+        run: |
+          oc start-build ${{ env.APP_NAME }} --from-dir=${{ env.SOURCE_DIR }}
