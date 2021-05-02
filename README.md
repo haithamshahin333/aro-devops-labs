@@ -66,7 +66,39 @@
 
 ### Build and Deploy App through GitHub Actions Pipeline
 
+1. We will now build a basic CI/CD pipeline using GitHub Actions and GitHub Hosted runners. We will be leveraging the OpenShift GitHub Actions tasks found [here](https://github.com/redhat-actions). 
 
+2. To support our workflow, we will need to create a [Service Account](https://github.com/redhat-actions/oc-login/wiki/Using-a-Service-Account-for-GitHub-Actions) so that we can securely connect to our cluster with a principal that has just the right amount of priviledges needed for our actions.
+
+3. Run the following bash script:
+
+    ```
+    # First, name your Service Account (the Kubernetes shortname is "sa")
+    export SA=github-actions-sa
+    # and create it.
+    oc create sa $SA
+
+    # Now, we have to find the name of the secret in which the Service Account's apiserver token is stored.
+    # The following command will output two secrets. 
+    export SECRETS=$(oc get sa $SA -o jsonpath='{.secrets[*].name}{"\n"}') && echo $SECRETS
+    # Select the one with "token" in the name - the other is for the container registry.
+    export SECRET_NAME=$(printf "%s\n" $SECRETS | grep "token") && echo $SECRET_NAME
+
+    # Get the token from the secret. 
+    export ENCODED_TOKEN=$(oc get secret $SECRET_NAME -o jsonpath='{.data.token}{"\n"}') && echo $ENCODED_TOKEN;
+    export TOKEN=$(echo $ENCODED_TOKEN | base64 -d) && echo $TOKEN
+    ```
+
+4. Run the following to grant that account edit access to the project: `oc policy add-role-to-user edit -z $SA`
+
+5. Add the following secrets to your repo for the GitHub actions workflow to function:
+
+    ```
+    OPENSHIFT_SERVER        # this is the api url - run `oc cluster-info` to see this url
+    OPENSHIFT_TOKEN         # this is the SA token - run `echo $TOKEN` to see this value
+    OPENSHIFT_NAMESPACE     # this is the namespace/project being used - this should be `lab-2`
+    ```
+6. Make a change to the app in `src/public/index.html` and push the change to branch `lab-2`. You should now see the workflow run and start the S2I build in OpenShift. From there, the deployment will be triggered with the latest built image and the deployed app should reflect your change.
 
 ## Lab 3: Deploy Nexus, SonarQube
 
