@@ -42,6 +42,30 @@
 
 ### Deploy Openshift Resources with Helm Chart
 
+1. Switch over to `lab-2` branch - `git checkout lab-2`.
+
+2. Create a new project for this section - run `oc new-project lab-2`
+
+3. View the helm chart templates rendered with the `values.yaml` config by running `helm template express-app charts/app-chart/.`
+
+    > Info: View how these resources are almost identical to those created by `oc new-app`. We are leveraging the file in `charts/app-chart/values.yaml` to provide paramter values to the templates stored in `charts/app-chart/templates`. We can customize these values to modify our manifests without having to make direct changes to the templates themselves.
+
+4. To deploy the resourcs to the `lab-2` project, run `helm template express-app charts/app-chart/. | oc apply -f -`. Confirm that you see the following:
+
+    ```
+    service/node-express-app created
+    deployment.apps/node-express-app created
+    buildconfig.build.openshift.io/node-express-app created
+    imagestream.image.openshift.io/node-express-app created
+    route.route.openshift.io/node-express-app created
+    ```
+
+5. To deploy the app, we need to start the build and pass in our source code for the s2i process to begin. Run `oc start-build node-express-app --from-dir=src`.
+
+6. Once this is complete, confirm that you can navigate to the app through the route on the openshift console.
+
+### Build and Deploy App through GitHub Actions Pipeline
+
 
 
 ## Lab 3: Deploy Nexus, SonarQube
