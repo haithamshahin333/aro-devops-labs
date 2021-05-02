@@ -34,145 +34,45 @@ name: OpenShift
 # ⬇️  Modify the fields marked with ⬇️ to fit your project, and create any secrets that are referenced.
 # https://docs.github.com/en/free-pro-team@latest/actions/reference/encrypted-secrets
 env:
-  # ⬇️ EDIT with your registry and registry path.
-  REGISTRY: quay.io/<username>
-  # ⬇️ EDIT with your registry username.
-  REGISTRY_USER: <username>
-  REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
-
-  # ⬇️ EDIT to log into your OpenShift cluster and set up the context.
-  # See https://github.com/redhat-actions/oc-login#readme for how to retrieve these values.
-  OPENSHIFT_SERVER: ${{ secrets.OPENSHIFT_SERVER }}
-  OPENSHIFT_TOKEN: ${{ secrets.OPENSHIFT_TOKEN }}
-
-  # ⬇️ EDIT with the port your application should be accessible on.
-  APP_PORT: 8080
-
-  # ⬇️ EDIT if you wish to set the kube context's namespace after login. Leave blank to use the default namespace.
-  OPENSHIFT_NAMESPACE: ""
-
-  # If you wish to manually provide the APP_NAME and TAG, set them here, otherwise they will be auto-detected.
-  APP_NAME: ""
-  TAG: ""
+  APP_NAME: node-express-app
+  SOURCE_DIR: src
+  NODE_VERSION: 12
 
 on:
   # https://docs.github.com/en/free-pro-team@latest/actions/reference/events-that-trigger-workflows
   push:
     # Edit to the branch(es) you want to build and deploy on each push.
-    branches: [ main ]
+    branches: [ lab-2 ]
 
 jobs:
   openshift-ci-cd:
     name: Build and deploy to OpenShift
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     environment: production
 
-    outputs:
-        ROUTE: ${{ steps.deploy-and-expose.outputs.route }}
-        SELECTOR: ${{ steps.deploy-and-expose.outputs.selector }}
-
     steps:
-    - name: Check if secrets exists
-      uses: actions/github-script@v3
-      with:
-        script: |
-          const secrets = {
-            REGISTRY_PASSWORD: `${{ secrets.REGISTRY_PASSWORD }}`,
-            OPENSHIFT_SERVER: `${{ secrets.OPENSHIFT_SERVER }}`,
-            OPENSHIFT_TOKEN: `${{ secrets.OPENSHIFT_TOKEN }}`,
-          };
+      - uses: actions/checkout@v2
 
-          const missingSecrets = Object.entries(secrets).filter(([ name, value ]) => {
-            if (value.length === 0) {
-              core.warning(`Secret "${name}" is not set`);
-              return true;
-            }
-            core.info(`✔️ Secret "${name}" is set`);
-            return false;
+      - name: Setup node
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ env.NODE_VERSION }}
 
-          });
+      - run: npm install
+        working-directory: ${{ env.SOURCE_DIR }}
 
-          if (missingSecrets.length > 0) {
-            core.setFailed(`❌ At least one required secret is not set in the repository. \n` +
-              "You can add it using:\n" +
-              "GitHub UI: https://docs.github.com/en/actions/reference/encrypted-secrets#creating-encrypted-secrets-for-a-repository \n" +
-              "GitHub CLI: https://cli.github.com/manual/gh_secret_set \n" +
-              "Also, refer to https://github.com/redhat-actions/oc-login#getting-started-with-the-action-or-see-example");
-          }
-          else {
-            core.info(`✅ All the required secrets are set`);
-          }
-
-    - uses: actions/checkout@v2
-
-    - name: Determine app name
-      if: env.APP_NAME == ''
-      run: |
-        echo "APP_NAME=$(basename $PWD)" | tee -a $GITHUB_ENV
-
-    - name: Determine tag
-      if: env.TAG == ''
-      run: |
-        echo "TAG=${GITHUB_SHA::7}" | tee -a $GITHUB_ENV
-
-    # https://github.com/redhat-actions/buildah-build#readme
-    - name: Build from Dockerfile
-      id: image-build
-      uses: redhat-actions/buildah-build@v2
-      with:
-        image: ${{ env.APP_NAME }}
-        tags: ${{ env.TAG }}
-        # If you don't have a dockerfile, see:
-        # https://github.com/redhat-actions/buildah-build#scratch-build-inputs
-        # Otherwise, point this to your Dockerfile relative to the repository root.
-        dockerfiles: |
-          ./Dockerfile
-
-    # https://github.com/redhat-actions/push-to-registry#readme
-    - name: Push to registry
-      id: push-to-registry
-      uses: redhat-actions/push-to-registry@v2
-      with:
-        image: ${{ steps.image-build.outputs.image }}
-        tags: ${{ steps.image-build.outputs.tags }}
-        registry: ${{ env.REGISTRY }}
-        username: ${{ env.REGISTRY_USER }}
-        password: ${{ env.REGISTRY_PASSWORD }}
-
-    # The path the image was pushed to is now stored in ${{ steps.push-to-registry.outputs.registry-path }}
-
-    # oc-login works on all platforms, but oc must be installed first.
-    # The GitHub Ubuntu runner already includes oc.
-    # Otherwise, https://github.com/redhat-actions/oc-installer#readme is available.
+      - run: npm test
+        working-directory: ${{ env.SOURCE_DIR }}
 
     # https://github.com/redhat-actions/oc-login#readme
     - name: Log in to OpenShift
       uses: redhat-actions/oc-login@v1
       with:
-        openshift_server_url: ${{ env.OPENSHIFT_SERVER }}
-        openshift_token: ${{ env.OPENSHIFT_TOKEN }}
-        insecure_skip_tls_verify: true
-        namespace: ${{ env.OPENSHIFT_NAMESPACE }}
+        openshift_server_url: ${{ secrets.OPENSHIFT_SERVER }}
+        openshift_token: ${{ secrets.OPENSHIFT_TOKEN }}
+        insecure_skip_tls_verify: false
+        namespace: ${{ secrets.OPENSHIFT_NAMESPACE }}
 
-    # This step should create a deployment, service, and route to run your app and expose it to the internet.
-    # https://github.com/redhat-actions/oc-new-app#readme
-    - name: Create and expose app
-      id: deploy-and-expose
-      uses: redhat-actions/oc-new-app@v1
-      with:
-        app_name: ${{ env.APP_NAME }}
-        image: ${{ steps.push-to-registry.outputs.registry-path }}
-        namespace: ${{ env.OPENSHIFT_NAMESPACE }}
-        port: ${{ env.APP_PORT }}
-
-    - name: View application route
+    - name: Start oc S2I build
       run: |
-        [[ -n ${{ env.ROUTE }} ]] || (echo "Determining application route failed in previous step"; exit 1)
-        echo "======================== Your application is available at: ========================"
-        echo ${{ env.ROUTE }}
-        echo "==================================================================================="
-        echo
-        echo "Your app can be taken down with: \"oc delete all --selector='${{ env.SELECTOR }}'\""
-      env:
-        ROUTE: ${{ steps.deploy-and-expose.outputs.route }}
-        SELECTOR: ${{ steps.deploy-and-expose.outputs.selector }}
+        oc start-build ${{ env.APP_NAME }} --from-dir=${{ env.SOURCE_DIR }}
