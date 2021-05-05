@@ -1,5 +1,14 @@
 # ARO DevOps Labs
 
+## Prereqs:
+
+- Azure Subscription (commercial)
+- [GitHub Account](https://github.com/)
+- [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli), v2.18 (or newer)
+- [Helm](https://helm.sh/docs/intro/install/), v3.5.1 (or newer)
+- [OC CLI](https://docs.openshift.com/container-platform/4.6/cli_reference/openshift_cli/getting-started-cli.html)
+- [Node / NPM](https://nodejs.org/en/download/)
+
 ## Lab 1: Deploy ARO with Basic Express/Node JS App
 
 ### Deploy ARO
