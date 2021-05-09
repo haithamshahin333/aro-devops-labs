@@ -1,21 +1,14 @@
 # ARO DevOps Labs
 
-## Prereqs:
-
-- Azure Subscription (commercial)
-- [GitHub Account](https://github.com/)
-- [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli), v2.18 (or newer)
-- [Helm](https://helm.sh/docs/intro/install/), v3.5.1 (or newer)
-- [OC CLI](https://docs.openshift.com/container-platform/4.6/cli_reference/openshift_cli/getting-started-cli.html)
-- [Node / NPM](https://nodejs.org/en/download/)
-
 ## Lab 1: Deploy ARO with Basic Express/Node JS App
 
 ### Deploy ARO
 
-1. Run the `deploy-aro.sh` script if you have yet to deploy an ARO cluster within your subscription.
+1. Run the `scripts/deploy-aro.sh` script if you have yet to deploy an ARO cluster within your subscription.
 
-    >Note: Be sure to add the `pull-secret.txt` file in the same directory as `deploy-aro.sh` so that the cluster is deployed with the sample images/templates.
+    > Note: Be sure to add the `pull-secret.txt` file in the same `scripts` directory as `deploy-aro.sh` so that the cluster is deployed with the sample images/templates.
+
+    > Info: [Instructions](https://docs.microsoft.com/en-us/azure/openshift/tutorial-create-cluster#get-a-red-hat-pull-secret-optional) for the `pull-secret.txt` file
 
 ### Instantiate app in ARO with oc new-app
 
@@ -46,11 +39,3 @@
 9. Run `oc expose service/node-express-app` to create a Route resource and expose the app endpoint.
 
 10. Run `oc get route/node-express-app` to get the URL for your app.
-
-## Lab 2: Build, Bake, and Deploy App in GitHub Actions
-
-## Lab 3: Deploy Nexus, SonarQube
-
-## Lab 4: Container Scanning & E2E Testing
-
-## Lab 5: Operators & GitOps with Argo CD
