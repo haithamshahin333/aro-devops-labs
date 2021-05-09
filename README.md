@@ -41,7 +41,7 @@
     ```
     # First, name your Service Account (the Kubernetes shortname is "sa")
     export SA=github-actions-sa
-    
+
     # and create it.
     oc create sa $SA
 
@@ -66,3 +66,7 @@
     OPENSHIFT_NAMESPACE     # this is the namespace/project being used - this should be `lab-2`
     ```
 6. Make a change to the app in `src/public/index.html` and push the change to branch `lab-2`. You should now see the workflow run and start the S2I build in OpenShift. From there, the deployment will be triggered with the latest built image and the deployed app should reflect your change.
+
+7. Review `.github/workflows/openshift.yml` to view the workflow setup. You'll see that it follows a similar pattern to what we ran locally (npm install -> npm test -> oc login -> oc start-build).
+
+8. Validate that the newly deployed app shows the change made to the `src/public/index.html` file.
