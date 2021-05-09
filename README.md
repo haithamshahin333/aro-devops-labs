@@ -39,7 +39,7 @@
     service "node-express-app" created
     ```
 
-8. Run `oc start-build express-node-app --from-dir . --follow` to start the image build in Openshift.
+8. Run `oc start-build node-express-app --from-dir . --follow` to start the image build in Openshift.
 
     >Info: This is the s2i process in Openshift. Openshift recognized this as a node project because of the package.json file in the directory and is able to select the proper base image and build steps to build a container image. No Dockerfile needed for this case!
 
