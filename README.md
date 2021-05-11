@@ -28,3 +28,5 @@
 
 1. Add a secret to your repo which will hold the route to the proxy. Name the secret `NEXUS_PROXY` and obtain the route through the Nexus UI by copying the URL for the npm proxy repository.
 
+2. Push the change and view the action run. When it completes, navigate to your Nexus instance and select the repository. You should see the dependencies that were used for the app all in the repository.
+
