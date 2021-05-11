@@ -44,7 +44,7 @@ on:
   
   push:
     # Edit to the branch(es) you want to build and deploy on each push.
-    branches: [ lab-2 ]
+    branches: [ lab-3 ]
 
 jobs:
   openshift-ci-cd:
