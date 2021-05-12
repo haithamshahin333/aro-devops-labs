@@ -73,7 +73,6 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_ROUTE }}
-        working-directory: ${{ env.SOURCE_DIR }}
 
       # https://github.com/redhat-actions/oc-login#readme
       - name: Log in to OpenShift
