@@ -1,0 +1,106 @@
+---
+# Source: chart/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: node-express-app
+  labels:
+    app: node-express-app
+    app.kubernetes.io/component: node-express-app
+    app.kubernetes.io/instance: node-express-app
+spec:
+  ports:
+    - port: 80
+      targetPort: 8080
+      protocol: TCP
+      name: 80-http
+  selector:
+    deployment: node-express-app
+---
+# Source: chart/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    image.openshift.io/triggers: '[{"from":{"kind":"ImageStreamTag","name":"node-express-app:latest"},"fieldPath":"spec.template.spec.containers[?(@.name==\"node-express-app\")].image"}]'
+  labels:
+    app: node-express-app
+    app.kubernetes.io/component: node-express-app
+    app.kubernetes.io/instance: node-express-app
+  name: node-express-app
+spec:
+  selector:
+    matchLabels:
+      deployment: node-express-app
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        deployment: node-express-app
+    spec:
+      containers:
+      - name: node-express-app
+        image: node-express-app:latest
+        env:
+        - name: PORT
+          value: "8080"
+        ports:
+        - containerPort: 8080
+---
+# Source: chart/templates/buildconfig.yaml
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  labels:
+    app: node-express-app
+    app.kubernetes.io/component: node-express-app
+    app.kubernetes.io/instance: node-express-app
+  name: node-express-app
+spec:
+  output:
+    to:
+      kind: ImageStreamTag
+      name: node-express-app:latest
+  source:
+    type: Binary
+  strategy:
+    sourceStrategy:
+      from:
+        kind: ImageStreamTag
+        name: nodejs:12-ubi8
+        namespace: openshift
+    type: Source
+  triggers:
+  - type: ConfigChange
+---
+# Source: chart/templates/imagestream.yaml
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  labels:
+    app: node-express-app
+    app.kubernetes.io/component: node-express-app
+    app.kubernetes.io/instance: node-express-app
+  name: node-express-app
+spec:
+  lookupPolicy:
+    local: true
+---
+# Source: chart/templates/route.yaml
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  labels:
+    app: node-express-app
+    app.kubernetes.io/component: node-express-app
+    app.kubernetes.io/instance: node-express-app
+  name: node-express-app
+spec:
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  to:
+    kind: Service
+    name: node-express-app
+  port:
+    targetPort: 80-http

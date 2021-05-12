@@ -6,3 +6,4 @@ appName: node-express-app
 baseImage: nodejs:12-ubi8
 targetPort: 8080
 replicaCount: 1
+  
