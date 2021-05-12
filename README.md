@@ -10,4 +10,8 @@
 
 ### Add SonarQube to GitHub Actions Workflow
 
-1. First, we will provision a token in SonarQube token for the GitHub Actions Workflow.
+1. First, we will provision a token in SonarQube token for the GitHub Actions Workflow. View https://docs.sonarqube.org/latest/user-guide/user-token/ for instructions on the token.
+
+2. Add a `SONAR_TOKEN` secret to the repo as well as a `SONAR_ROUTE` secret that points to the sonarqube instance deployed.
+
+3. Push up to `lab-4` and watch the pipeline execute. After it's complete, navigate to sonarqube and you should see data that came back from the scan.
