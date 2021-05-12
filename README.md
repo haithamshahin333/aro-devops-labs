@@ -10,4 +10,4 @@
 
 ### Add SonarQube to GitHub Actions Workflow
 
-1. First, we will provision a token in SonarQube token 
+1. First, we will provision a token in SonarQube token for the GitHub Actions Workflow.
