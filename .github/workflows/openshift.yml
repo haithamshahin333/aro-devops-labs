@@ -44,7 +44,7 @@ on:
   
   push:
     # Edit to the branch(es) you want to build and deploy on each push.
-    branches: [ lab-3 ]
+    branches: [ lab-4 ]
 
 jobs:
   openshift-ci-cd:
@@ -67,6 +67,12 @@ jobs:
           npm install
 
       - run: npm test
+        working-directory: ${{ env.SOURCE_DIR }}
+
+      - uses: docker://sonarsource/sonar-scanner-cli:latest
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_ROUTE }}
         working-directory: ${{ env.SOURCE_DIR }}
 
       # https://github.com/redhat-actions/oc-login#readme
