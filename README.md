@@ -1,41 +1,42 @@
 # ARO DevOps Labs
 
-## Lab 1: Deploy ARO with Basic Express/Node JS App
+## Prereqs:
 
-### Deploy ARO
+- Azure Subscription (commercial)
+- [GitHub Account](https://github.com/)
+- [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli), v2.18 (or newer)
+- [Helm](https://helm.sh/docs/intro/install/), v3.5.1 (or newer)
+- [OC CLI](https://docs.openshift.com/container-platform/4.6/cli_reference/openshift_cli/getting-started-cli.html)
+- [Node / NPM](https://nodejs.org/en/download/)
 
-1. Run the `scripts/deploy-aro.sh` script if you have yet to deploy an ARO cluster within your subscription.
+## [Lab 1: Deploy ARO with Basic Express/Node JS App]()
 
-    > Note: Be sure to add the `pull-secret.txt` file in the same `scripts` directory as `deploy-aro.sh` so that the cluster is deployed with the sample images/templates.
+`git checkout lab-1`
 
-    > Info: [Instructions](https://docs.microsoft.com/en-us/azure/openshift/tutorial-create-cluster#get-a-red-hat-pull-secret-optional) for the `pull-secret.txt` file
+## Lab 2: Build, Bake, and Deploy App in GitHub Actions
 
-### Instantiate app in ARO with oc new-app
+`git checkout lab-2`
 
-2. Once the cluster is up an running, fork this repo with your GitHub account and then clone the forked repo into a local directory.
+## Lab 3: Deploy Nexus using Helm
 
-3. Navigate to the root folder and run `npm install` to pull down dependencies.
+`git checkout lab-3`
 
-4. Run `npm start` to run the app locally. Navigate to `http://localhost:8080` and you'll find the app running.
+## Lab 4: Deploy SonarQube using Helm
 
-5. Now, we will create the resources needed in the cluster to run the app in a new project.
+`git checkout lab-4`
 
-6. Run `oc new-project test-app` to create your `test-app` project.
+## Lab 5: Operators
 
-7. Run `oc new-app . --name=node-express-app` - notice the output and view the following resources that were made in Openshift:
+TODO
 
-    ```
-    --> Creating resources ...
-    imagestream.image.openshift.io "node-express-app" created
-    buildconfig.build.openshift.io "node-express-app" created
-    deployment.apps "node-express-app" created
-    service "node-express-app" created
-    ```
+## Lab 6: Externalized Configuration, Config Maps, Secrets
 
-8. Run `oc start-build node-express-app --from-dir . --follow` to start the image build in Openshift.
+TODO
 
-    >Info: This is the s2i process in Openshift. Openshift recognized this as a node project because of the package.json file in the directory and is able to select the proper base image and build steps to build a container image. No Dockerfile needed for this case!
+## Lab 7: Storage
 
-9. Run `oc expose service/node-express-app` to create a Route resource and expose the app endpoint.
+TODO
 
-10. Run `oc get route/node-express-app` to get the URL for your app.
+## Lab 8: Azure Integration (Key Vault, ACR, AAD, Container Insights)
+
+TODO
