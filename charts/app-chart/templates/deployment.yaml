@@ -21,13 +21,13 @@ spec:
       containers:
       - name: {{ .Values.appName }}
         image: {{ .Values.appName }}:latest
+        ports:
+        - containerPort: {{ .Values.targetPort }}
         {{- if .Values.config.enabled}}
         envFrom:
         - configMapRef:
             name: {{ .Values.config.name }}
         {{- end}}
-        ports:
-        - containerPort: {{ .Values.targetPort }}
         {{- if .Values.secret.enabled}}
         volumeMounts:
         - name: secret-volume-mount

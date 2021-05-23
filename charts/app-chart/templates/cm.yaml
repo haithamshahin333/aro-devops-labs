@@ -6,6 +6,6 @@ metadata:
   name: {{ .Values.config.name }}
 data:
   {{- range $key, $val := .Values.config.values }}
-  {{ $key }}: {{ $val | quote }}
+    {{ $key }}: {{ $val | quote }}
   {{- end}}
 {{- end}}

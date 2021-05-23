@@ -7,6 +7,22 @@ baseImage: nodejs:12-ubi8
 targetPort: 8080
 replicaCount: 1
 databaseConnectionString: mongodb://mongodb:27017
+  
+mongodb:
+  fullnameOverride: mongodb #override name so that it isn't pinned to release name
+  auth:
+    enabled: false
+  persistence:
+    enabled: true
+  containerSecurityContext:
+    enabled: false
+  podSecurityContext:
+    enabled: false
+
+
+
+
+  
 
 config:
   enabled: true
@@ -21,15 +37,3 @@ secret:
   values:
     DATABASE_URL: mongodb://mongodb:27017
     PORT: 8080
-
-  
-mongodb:
-  fullnameOverride: mongodb #override name so that it isn't pinned to release name
-  auth:
-    enabled: false
-  persistence:
-    enabled: false
-  containerSecurityContext:
-    enabled: false
-  podSecurityContext:
-    enabled: false
