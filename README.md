@@ -44,6 +44,10 @@
 
     > Info: Test the DB persistence by restarting the app after creating a few records. You should find that when the app redeploys, the prior records appear in the UI.
 
-### Deploy App with Mongo DB from Helm Chart
+### Deploy App with Mongo DB Connection from Helm Chart
+
+1. To automate our environment variable connection to the deployed instance of Mongo DB, we will add the `DATABASE_URL` env var to our template.
+
+2. 
 
 ### Add Mongo DB to Helm Chart
