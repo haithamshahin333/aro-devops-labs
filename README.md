@@ -48,6 +48,48 @@
 
 1. To automate our environment variable connection to the deployed instance of Mongo DB, we will add the `DATABASE_URL` env var to our template.
 
-2. 
+2. Go to `charts/app-chart/values.yaml` and see the `databaseConnectionString` setting that has been added as a config value. Confirm that the connection string is the same as what was used in the previous section when you added it manually in the console.
+
+3. In the `charts/app-chart/templates/deployment.yaml` file, you will see that an env-var field for the `DATABASE_URL` config has been added and references that value.
+
+4. Run `helm install mongo-app-helm charts/app-chart/.` from the root of the project. Then run `oc start-build node-express-app --from-dir=express-mongo-app/.` to start the build.
+
+5. Confirm in the console that the app was deployed with the new environment variable by selecting on the Deployment and viewing the Environment tab. Once the app is deployed, confirm the connection has been successfully made by viewing the logs and using the app.
 
 ### Add Mongo DB to Helm Chart
+
+1. We will add the bitnami Mongo DB chart as a dependency to our app helm chart to be able to deploy Mongo alongside our app through helm.
+
+2. Open `charts/app-chart/Chart.yaml` and uncomment the following at the bottom of the file:
+
+    ```
+    # dependencies:
+    # - name: mongodb
+    #   version: "10.15.2"
+    #   repository: "https://charts.bitnami.com/bitnami"
+    ```
+
+3. Run `helm dependency build charts/app-chart/.` - after it runs, you should see a `charts` directory within `charts/app-chart` that holds the Mongo DB helm package. This directory will not be committed to the repo (the `.gitignore` file includes a match on `*.tgz`). Think of this as the `node_modules` folder but for Helm.
+
+4. Since we now have the Mongo DB chart as a subchart, we can configure it in our `values.yaml` file. Uncomment the following in the `charts/app-chart/values.yaml` file to include the config settings needed for deploying Mongo DB.
+
+    ```
+    mongodb:
+        fullnameOverride: mongodb #override name so that it isn't pinned to release name
+        auth:
+            enabled: false
+        persistence:
+            enabled: true
+        containerSecurityContext:
+            enabled: false
+        podSecurityContext:
+            enabled: false
+    ```
+
+5. Update the `databaseConnectionString` value in the same file to be `mongodb://mongodb:27017` - this is because we specified the `fullNameOverride` in our Mongo DB settings, so the service name when Mongo DB will be deployed is going to be `mongodb`.
+
+6. Before redeploying with helm, run `helm uninstall mongo-app-helm` to delete the prior app deployment.
+
+7. Run `helm install mongo-app-with-db-helm charts/app-chart/.` from the root of the project. Then run `oc start-build node-express-app --from-dir=express-mongo-app/.` to start the build.
+
+8. In the console, confirm that both the app and Mongo DB are deployed. Verify the connection is successful to the DB from the app.

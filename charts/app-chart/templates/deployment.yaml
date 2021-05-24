@@ -24,5 +24,7 @@ spec:
         env:
         - name: PORT
           value: "{{ .Values.targetPort }}"
+        - name: DATABASE_URL
+          value: "{{ .Values.databaseConnectionString }}"
         ports:
         - containerPort: {{ .Values.targetPort }}

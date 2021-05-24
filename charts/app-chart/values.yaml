@@ -6,3 +6,15 @@ appName: node-express-app
 baseImage: nodejs:12-ubi8
 targetPort: 8080
 replicaCount: 1
+databaseConnectionString: mongodb://my-release-mongodb:27017      # value should be mongodb://mongodb:27017 when mongodb section is uncommented
+
+# mongodb:
+#   fullnameOverride: mongodb #override name so that it isn't pinned to release name
+#   auth:
+#     enabled: false
+#   persistence:
+#     enabled: true
+#   containerSecurityContext:
+#     enabled: false
+#   podSecurityContext:
+#     enabled: false
