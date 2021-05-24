@@ -30,7 +30,7 @@
 
 3. To test, run `oc new-project helm-test-cm` and then run `helm install app .`
 
-4. Start the build with `oc start-build node-express-mongo-app --from-dir=express-mongo-app-express-mongodb/.`
+4. Start the build with `oc start-build node-express-mongo-app --from-dir=express-mongo-app/.`
 
 5. Run `oc logs -f deployment/node-express-mongo-app` to view the log output
 
@@ -62,7 +62,7 @@
 
 3. To test, run `oc new-project helm-test-secret` and then run `helm install app .`
 
-4. Start the build with `oc start-build node-express-mongo-app --from-dir=express-mongo-app-express-mongodb/.`
+4. Start the build with `oc start-build node-express-mongo-app --from-dir=express-mongo-app/.`
 
 5. Run `oc logs -f deployment/node-express-mongo-app` to view the log output
 
