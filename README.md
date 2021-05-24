@@ -1,17 +1,39 @@
 # ARO DevOps Labs
 
-## Lab 4: Deploy SonarQube
+## Lab 5: Deploy Mongo DB
 
-### Deploy SonarQube
+1. In this lab, we will deploy a Mongo DB instance alongside a new app in the `express-mongo-app` that requires the DB. The app is sourced from the following [repo](https://github.com/Azure-Samples/js-e2e-express-mongodb).
 
-1. Run `helm install sonarqube-lab-3 redhat-cop/sonarqube` to install an instance of sonarqube using the default values.
+2. We will leverage the [bitnami helm chart](https://github.com/bitnami/charts/tree/master/bitnami/mongodb) to deploy Mongo Db. Run the following commands to add the repo and deploy an instance of Mongo DB:
 
-2. Once the app is up and running, login using the default credentials and you'll be prompted to change your password.
+```
+oc new-project lab-5
 
-### Add SonarQube to GitHub Actions Workflow
+helm repo add bitnami helm repo add bitnami https://charts.bitnami.com/bitnami
 
-1. First, we will provision a token in SonarQube token for the GitHub Actions Workflow. View https://docs.sonarqube.org/latest/user-guide/user-token/ for instructions on the token.
+helm install my-release bitnami/mongodb \
+    --set auth.enabled=false \                               # removing the need for username/password for ease of use
+    --set persistence.enabled=false \                        # removing the pvc for ease of use
+    --set podSecurityContext.enabled=false \                 # disabling pod security context config
+    --set containerSecurityContext.enabled=false             # disabling container security context config
+```
 
-2. Add a `SONAR_TOKEN` secret to the repo as well as a `SONAR_ROUTE` secret that points to the sonarqube instance deployed.
+3. To run a quick test to confirm it will integrate with the application, run the following commands to deploy an instance of the express-mongo-app.
 
-3. Push up to `lab-4` and watch the pipeline execute. After it's complete, navigate to sonarqube and you should see data that came back from the scan.
+```
+cd express-mongo-app
+
+oc new-app . --name=mongo-app
+
+oc start-build mongo-app --from-dir=. --follow
+```
+
+> Info: Once the build is complete, you should see the app up and running. However, it is not yet connected to the Mongo DB instance. You can confirm this by clicking into the container's logs and seeing the output from the app (which reports an error connecting to the DB).
+
+4. To setup the connection to the Mongo DB instance, we will update the Deployment with an environment variable in the console. 
+
+### Deploy Mongo DB with Helm
+
+### Deploy App with Mongo DB from Helm Chart
+
+### Add Mongo DB to Helm Chart
