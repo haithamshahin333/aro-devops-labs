@@ -74,16 +74,16 @@
 4. Since we now have the Mongo DB chart as a subchart, we can configure it in our `values.yaml` file. Uncomment the following in the `charts/app-chart/values.yaml` file to include the config settings needed for deploying Mongo DB.
 
     ```
-    mongodb:
-        fullnameOverride: mongodb #override name so that it isn't pinned to release name
-        auth:
-            enabled: false
-        persistence:
-            enabled: true
-        containerSecurityContext:
-            enabled: false
-        podSecurityContext:
-            enabled: false
+    # mongodb:
+    #   fullnameOverride: mongodb #override name so that it isn't pinned to release name
+    #   auth:
+    #     enabled: false
+    #   persistence:
+    #     enabled: true
+    #   containerSecurityContext:
+    #     enabled: false
+    #   podSecurityContext:
+    #     enabled: false
     ```
 
 5. Update the `databaseConnectionString` value in the same file to be `mongodb://mongodb:27017` - this is because we specified the `fullNameOverride` in our Mongo DB settings, so the service name when Mongo DB will be deployed is going to be `mongodb`.
