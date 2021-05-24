@@ -25,18 +25,26 @@
 
 `git checkout lab-4`
 
-## Lab 5: Operators
+## Lab 5: Mongo DB Deployment
 
-TODO
+`git checkout lab-5`
 
 ## Lab 6: Externalized Configuration, Config Maps, Secrets
 
-TODO
+`git checkout lab-6`
 
 ## Lab 7: Storage
 
 TODO
 
 ## Lab 8: Azure Integration (Key Vault, ACR, AAD, Container Insights)
+
+TODO
+
+## Lab 9: Operators
+
+TODO
+
+## Lab 10: GitOps with Argo CD
 
 TODO
