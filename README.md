@@ -33,18 +33,22 @@
 
 `git checkout lab-6`
 
-## Lab 7: Storage
+## Lab 7: Multi-Project Pipeline
 
 TODO
 
-## Lab 8: Azure Integration (Key Vault, ACR, AAD, Container Insights)
+## Lab 8: Storage
 
 TODO
 
-## Lab 9: Operators
+## Lab 9: Azure Integration (Key Vault, ACR, AAD, Container Insights)
 
 TODO
 
-## Lab 10: GitOps with Argo CD
+## Lab 10: Operators
+
+TODO
+
+## Lab 11: GitOps with Argo CD
 
 TODO
