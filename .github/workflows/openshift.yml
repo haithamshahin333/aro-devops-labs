@@ -66,8 +66,8 @@ jobs:
           npm config set registry ${{ secrets.NEXUS_PROXY }}
           npm install
 
-      - run: npm test
-        working-directory: ${{ env.SOURCE_DIR }}
+      # - run: npm test
+      #   working-directory: ${{ env.SOURCE_DIR }}
 
       - uses: docker://sonarsource/sonar-scanner-cli:latest
         env:
