@@ -1,0 +1,16 @@
+{{- if .Values.deployment.volume.enabled }}
+{{- with .Values.deployment.volume}}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .claimName }}
+spec:
+  storageClassName: {{ .storageClassName }}
+  accessModes:
+  - {{ .accessMode }}
+  resources:
+    requests:
+      storage: {{ .size }}
+{{- end}}
+{{- end}}

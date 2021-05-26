@@ -31,11 +31,22 @@ spec:
         - configMapRef:
             name: {{ .config.name }}
         {{- end}}
-        {{- if .secret.enabled}}
         volumeMounts:
+        {{- if .secret.enabled}}
         - name: secret-volume-mount
           mountPath: /etc/secret-volume
+        {{- end}}
+        {{- if .volume.enabled}}
+        - name: {{.volume.volumeName}}
+          mountPath: /var/test
+        {{- end}}
       volumes:
+      {{- if .volume.enabled}}
+      - name: {{ .volume.volumeName}}
+        persistentVolumeClaim:
+          claimName: {{ .volume.claimName }}
+      {{- end}}
+        {{- if .secret.enabled}}
       - name: secret-volume-mount
         secret:
           secretName: {{ .secret.name }}

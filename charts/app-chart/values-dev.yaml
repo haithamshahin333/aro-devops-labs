@@ -23,6 +23,13 @@ deployment:
   enabled: true
   targetPort: 8080
   replicaCount: 1
+  volume:
+    enabled: true
+    volumeName: test-volume
+    claimName: example
+    size: 1Gi
+    accessMode: ReadWriteOnce
+    storageClassName: ""
   config:
     enabled: true
     name: config-map-app

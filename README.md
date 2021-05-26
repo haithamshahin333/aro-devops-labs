@@ -1,83 +1,130 @@
 # ARO DevOps Labs
 
-## Lab 7: Config Maps and Secrets
+## Lab 8: Persistent Volumes
 
-### Provision Dev, Test, Prod Environments
+### Test Ephemeral Container
 
 1. To create a DevOps setup that can promote an image across environments, first we will create the different projects in OpenShift and deploy the required resources that will be used to build and run the application.
 
-2. First, let's create three projects for our environments:
+2. Deploy an instance of the app to the lab-8 project:
 
     ```
-    oc new-project lab-7-dev
-    oc new-project lab-7-test
-    oc new-project lab-7-prod
-    ```
-
-3. Review the `charts/app-chart` directory to see the updates made to the helm chart. Deploy the associated values file for each environment:
-
-    ```
-    oc project lab-7-dev
-    helm template dev charts/app-chart/. | oc apply -f -
-
-    oc project lab-7-test
-    helm template test charts/app-chart/. | oc apply -f -
-
-    oc project lab-7-pord
-    helm template prod charts/app-chart/. | oc apply -f -
-    ```
-
-4. Let's 'run' the pipeline steps manually to see how we will promote images across environments. First, build the image in dev by running the following: 
-
-    ```
-    oc project lab-7-dev
+    oc new-project lab-8
+    helm install lab-8 charts/app-chart/. -f ./charts/app-chart/values-dev.yaml
     oc start-build node-express-mongo-app --from-dir=express-mongo-app/. --follow
     ```
 
-    > Info: Once this runs to completion, confirm in the console that the app is running as expected in the lab-7-dev project.
-
-5. Once up and running in the dev project, run the following to promote the image to the test environment:
+3. Connect to the running container and create a file:
 
     ```
-    oc tag node-express-mongo-app:latest lab-7-test/node-express-mongo-app:latest
+    oc get pods
+    oc rsh <pod>
     ```
 
-    > Info: This will tag the imagestream in the lab-7-test project with the image built in the lab-7-dev project. Once that imagestream is updated, the deployment in lab-7-test is triggered to start.
+4. In the working directory, create a new file with `touch testfile.txt` and then run `exit` to leave the container.
 
-6. Run the same command for the prod project:
+5. Let's restart the deployment to create a new instance of the container and confirm that the created file does not exist. Run the following:
 
     ```
-    oc tag node-express-mongo-app:latest lab-7-prod/node-express-mongo-app:latest
+    oc rollout restart deployment/node-express-mongo-app
+
+    oc get events -w
+
+    oc rsh <pod>
     ```
 
-    > Info: In the values-prod.yaml file, the mongodb name/connection is slightly different. This mocks a scenario where the prod deployment of the app would not be connecting to an ephemeral DB by showing how the app's configuration is dynamic across environments.
+### Attach PVC to App
 
-### Run in GitHub Actions
+1. Let's create a PVC using the default Azure Disk storage class. Go to the console and get a sample of the YAML syntax for the PVC (you can also use the file in `charts/app-chart/pvc.yaml`).
 
-1. To setup to run our pipeline, let's deploy nexus and sonarqube to our labs-7-dev project:
+2. Notice how in the console, the PVC is created, but there is no persistent volume associated with it. View the resource events and you will find that the system is waiting for a consumer. Let's add the volume to our deployment. Run the following from the `charts/app-chart` directory:
+
+    ```
+    helm template test . -s templates/deployment.yaml -f values-dev.yaml | oc apply -f -
+    ```
+
+3. You should see the PVC get bound to the app in the console. Additionally a PV is created and a backing Azure Disk was created.
+
+4. Run the following to test:
+
+    ```
+    oc get pods
+    oc rsh <pod>
+    cd /var/test && touch testfile.txt
+    exit
+
+    oc rollout restart deployment/node-express-mongo-app
+
+    oc get pods
+    oc rsh <pod>
+    cd /var/test    # you should see testfile.txt
+    ```
+
+### Setup Azure Files with ARO
+
+> Info: Sourced from [ARO Microsoft Docs](https://docs.microsoft.com/en-us/azure/openshift/howto-create-a-storageclass)
+
+1. Run the following to create a storage account in Azure:
+
+    ```
+    AZURE_FILES_RESOURCE_GROUP=aro_azure_files
+    LOCATION=eastus
+
+    az group create -l $LOCATION -n $AZURE_FILES_RESOURCE_GROUP
+
+    AZURE_STORAGE_ACCOUNT_NAME=aroazurefiles<UNIQUE>
+
+    az storage account create \
+        --name $AZURE_STORAGE_ACCOUNT_NAME \
+        --resource-group $AZURE_FILES_RESOURCE_GROUP \
+        --kind StorageV2 \
+        --sku Standard_LRS
+    ```
+
+2. Run the following to update the service principle permissions in ARO:
 
 ```
-oc project lab-7-dev
-helm install nexus-lab-7 redhat-cop/sonatype-nexus
-helm install sonarqube-lab-7 redhat-cop/sonarqube
+ARO_RESOURCE_GROUP=aro-rg
+CLUSTER=cluster
+ARO_SERVICE_PRINCIPAL_ID=$(az aro show -g $ARO_RESOURCE_GROUP -n $CLUSTER --query servicePrincipalProfile.clientId -o tsv)
+
+az role assignment create --role Contributor --assignee $ARO_SERVICE_PRINCIPAL_ID -g $AZURE_FILES_RESOURCE_GROUP
 ```
 
-2. Run the following commands to create a service account that has the priviledges to work across these three projects:
+3. Run these set of commands to give the persistent volume binder service account the ability to read and create secrets:
 
 ```
-oc create sa github-actions-sa
+ARO_API_SERVER=$(az aro list --query "[?contains(name,'$CLUSTER')].[apiserverProfile.url]" -o tsv)
 
-oc policy add-role-to-user edit -z github-actions-sa        # Service Account is editor for all projects
+oc login -u kubeadmin -p $(az aro list-credentials -g $ARO_RESOURCE_GROUP -n $CLUSTER --query=kubeadminPassword -o tsv) $ARO_API_SERVER
 
-# Now, we have to find the name of the secret in which the Service Account's apiserver token is stored.
-# The following command will output two secrets. 
-export SECRETS=$(oc get sa $SA -o jsonpath='{.secrets[*].name}{"\n"}') && echo $SECRETS
-# Select the one with "token" in the name - the other is for the container registry.
-export SECRET_NAME=$(printf "%s\n" $SECRETS | grep "token") && echo $SECRET_NAME
+oc create clusterrole azure-secret-reader \
+	--verb=create,get \
+	--resource=secrets
 
-# Get the token from the secret. 
-export ENCODED_TOKEN=$(oc get secret $SECRET_NAME -o jsonpath='{.data.token}{"\n"}') && echo $ENCODED_TOKEN;
-export TOKEN=$(echo $ENCODED_TOKEN | base64 -d) && echo $TOKEN
+oc adm policy add-cluster-role-to-user azure-secret-reader system:serviceaccount:kube-system:persistent-volume-binder
 ```
 
-3. Populate the required GitHub secrets to support the pipeline and then make a commit back to your lab-7 branch to run. You should see the pipeline execute in a similar fashion to what we ran locally with the image tagging, which is how the image gets promoted throughout the different environments.
+4. Finally, create the Storage Class for Azure Files by running this in the same shell as where the prior environment variables were set:
+
+    ```
+    cat << EOF >> azure-storageclass-azure-file.yaml
+    kind: StorageClass
+    apiVersion: storage.k8s.io/v1
+    metadata:
+    name: azure-file
+    provisioner: kubernetes.io/azure-file
+    parameters:
+    location: $LOCATION
+    secretNamespace: kube-system
+    skuName: Standard_LRS
+    storageAccount: $AZURE_STORAGE_ACCOUNT_NAME
+    resourceGroup: $AZURE_FILES_RESOURCE_GROUP
+    reclaimPolicy: Delete
+    volumeBindingMode: Immediate
+    EOF
+
+    oc create -f azure-storageclass-azure-file.yaml
+    ```
+
+5. Update the PVC with the storage class name create above (azure-file) and then run through a similar test to confirm the azure file share is mounted.
