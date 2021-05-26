@@ -79,3 +79,5 @@ export SECRET_NAME=$(printf "%s\n" $SECRETS | grep "token") && echo $SECRET_NAME
 export ENCODED_TOKEN=$(oc get secret $SECRET_NAME -o jsonpath='{.data.token}{"\n"}') && echo $ENCODED_TOKEN;
 export TOKEN=$(echo $ENCODED_TOKEN | base64 -d) && echo $TOKEN
 ```
+
+3. Populate the required GitHub secrets to support the pipeline and then make a commit back to your lab-7 branch to run. You should see the pipeline execute in a similar fashion to what we ran locally with the image tagging, which is how the image gets promoted throughout the different environments.
