@@ -1,130 +1,132 @@
 # ARO DevOps Labs
 
-## Lab 8: Persistent Volumes
+## Lab 9: Azure Integrations with ARO
 
-### Test Ephemeral Container
+### Azure Key Vault Integration
 
-1. To create a DevOps setup that can promote an image across environments, first we will create the different projects in OpenShift and deploy the required resources that will be used to build and run the application.
+> Info: [Repo](https://github.com/Azure/secrets-store-csi-driver-provider-azure/tree/master/charts/csi-secrets-store-provider-azure) for the helm chart.
 
-2. Deploy an instance of the app to the lab-8 project:
+Reference List:
+- https://www.openshift.com/blog/managing-sccs-in-openshift
+- https://github.com/aramase/secrets-store-csi-driver-provider-azure/blob/openshift-docs/website/content/en/configurations/deploy-in-openshift.md
+- https://azure.github.io/secrets-store-csi-driver-provider-azure/demos/standard-walkthrough/
+- https://secrets-store-csi-driver.sigs.k8s.io/topics/best-practices.html
 
-    ```
-    oc new-project lab-8
-    helm install lab-8 charts/app-chart/. -f ./charts/app-chart/values-dev.yaml
-    oc start-build node-express-mongo-app --from-dir=express-mongo-app/. --follow
-    ```
-
-3. Connect to the running container and create a file:
+1. Run the following:
 
     ```
-    oc get pods
-    oc rsh <pod>
+    helm repo add csi-secrets-store-provider-azure https://raw.githubusercontent.com/Azure/secrets-store-csi-driver-provider-azure/master/charts
+    helm install csi-secrets-store-provider-azure/csi-secrets-store-provider-azure --generate-name
     ```
-
-4. In the working directory, create a new file with `touch testfile.txt` and then run `exit` to leave the container.
-
-5. Let's restart the deployment to create a new instance of the container and confirm that the created file does not exist. Run the following:
-
-    ```
-    oc rollout restart deployment/node-express-mongo-app
-
-    oc get events -w
-
-    oc rsh <pod>
-    ```
-
-### Attach PVC to App
-
-1. Let's create a PVC using the default Azure Disk storage class. Go to the console and get a sample of the YAML syntax for the PVC (you can also use the file in `charts/app-chart/pvc.yaml`).
-
-2. Notice how in the console, the PVC is created, but there is no persistent volume associated with it. View the resource events and you will find that the system is waiting for a consumer. Let's add the volume to our deployment. Run the following from the `charts/app-chart` directory:
-
-    ```
-    helm template test . -s templates/deployment.yaml -f values-dev.yaml | oc apply -f -
-    ```
-
-3. You should see the PVC get bound to the app in the console. Additionally a PV is created and a backing Azure Disk was created.
-
-4. Run the following to test:
-
-    ```
-    oc get pods
-    oc rsh <pod>
-    cd /var/test && touch testfile.txt
-    exit
-
-    oc rollout restart deployment/node-express-mongo-app
-
-    oc get pods
-    oc rsh <pod>
-    cd /var/test    # you should see testfile.txt
-    ```
-
-### Setup Azure Files with ARO
-
-> Info: Sourced from [ARO Microsoft Docs](https://docs.microsoft.com/en-us/azure/openshift/howto-create-a-storageclass)
-
-1. Run the following to create a storage account in Azure:
-
-    ```
-    AZURE_FILES_RESOURCE_GROUP=aro_azure_files
-    LOCATION=eastus
-
-    az group create -l $LOCATION -n $AZURE_FILES_RESOURCE_GROUP
-
-    AZURE_STORAGE_ACCOUNT_NAME=aroazurefiles<UNIQUE>
-
-    az storage account create \
-        --name $AZURE_STORAGE_ACCOUNT_NAME \
-        --resource-group $AZURE_FILES_RESOURCE_GROUP \
-        --kind StorageV2 \
-        --sku Standard_LRS
-    ```
-
-2. Run the following to update the service principle permissions in ARO:
+2. Then run the following:
 
 ```
-ARO_RESOURCE_GROUP=aro-rg
-CLUSTER=cluster
-ARO_SERVICE_PRINCIPAL_ID=$(az aro show -g $ARO_RESOURCE_GROUP -n $CLUSTER --query servicePrincipalProfile.clientId -o tsv)
-
-az role assignment create --role Contributor --assignee $ARO_SERVICE_PRINCIPAL_ID -g $AZURE_FILES_RESOURCE_GROUP
+oc adm policy add-scc-to-user privileged system:serviceaccount:$target_namespace:secrets-store-csi-driver
+oc adm policy add-scc-to-user privileged system:serviceaccount:$target_namespace:csi-secrets-store-provider-azure
 ```
 
-3. Run these set of commands to give the persistent volume binder service account the ability to read and create secrets:
+3. az cli setup commands:
 
 ```
-ARO_API_SERVER=$(az aro list --query "[?contains(name,'$CLUSTER')].[apiserverProfile.url]" -o tsv)
+export SUBSCRIPTION_ID="<SubscriptionID>"
+export TENANT_ID="<tenant id>"
 
-oc login -u kubeadmin -p $(az aro list-credentials -g $ARO_RESOURCE_GROUP -n $CLUSTER --query=kubeadminPassword -o tsv) $ARO_API_SERVER
+# login as a user and set the appropriate subscription ID
+az login
+az account set -s "${SUBSCRIPTION_ID}"
 
-oc create clusterrole azure-secret-reader \
-	--verb=create,get \
-	--resource=secrets
-
-oc adm policy add-cluster-role-to-user azure-secret-reader system:serviceaccount:kube-system:persistent-volume-binder
+export KEYVAULT_RESOURCE_GROUP=<keyvault-resource-group>
+export KEYVAULT_LOCATION=eastus
+export KEYVAULT_NAME=secret-store-$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 10 | head -n 1)
 ```
 
-4. Finally, create the Storage Class for Azure Files by running this in the same shell as where the prior environment variables were set:
+4. Create a keyvault instance and secret:
 
-    ```
-    cat << EOF >> azure-storageclass-azure-file.yaml
-    kind: StorageClass
-    apiVersion: storage.k8s.io/v1
-    metadata:
-    name: azure-file
-    provisioner: kubernetes.io/azure-file
-    parameters:
-    location: $LOCATION
-    secretNamespace: kube-system
-    skuName: Standard_LRS
-    storageAccount: $AZURE_STORAGE_ACCOUNT_NAME
-    resourceGroup: $AZURE_FILES_RESOURCE_GROUP
-    reclaimPolicy: Delete
-    volumeBindingMode: Immediate
-    EOF
+```
+ az group create -n ${KEYVAULT_RESOURCE_GROUP} --location ${KEYVAULT_LOCATION}
+ az keyvault create -n ${KEYVAULT_NAME} -g ${KEYVAULT_RESOURCE_GROUP} --location ${KEYVAULT_LOCATION}
+```
 
-    oc create -f azure-storageclass-azure-file.yaml
-    ```
+5. Add a secret to the vault instance:
 
-5. Update the PVC with the storage class name create above (azure-file) and then run through a similar test to confirm the azure file share is mounted.
+```
+az keyvault secret set --vault-name ${KEYVAULT_NAME} --name secret1 --value "Hello!"
+```
+
+> Info: Validate that the secret exists through the Azure portal.
+
+6. Create an Azure Service Principal that the secret provider can use in ARO:
+
+```
+# Create a service principal to access keyvault
+az ad sp create-for-rbac --skip-assignment --name http://secrets-store-test-aro
+expor SERVICE_PRINCIPAL_CLIENT_SECRET=<password from output of prior command>
+export SERVICE_PRINCIPAL_CLIENT_ID=<appId from output of earlier command>
+
+az keyvault set-policy -n ${KEYVAULT_NAME} --secret-permissions get --spn ${SERVICE_PRINCIPAL_CLIENT_ID} -g ${KEYVAULT_RESOURCE_GROUP}
+```
+
+6. Run `oc new-project lab-9` and create the following kubernetes secret:
+
+```
+kubectl create secret generic secrets-store-creds --from-literal clientid=${SERVICE_PRINCIPAL_CLIENT_ID} --from-literal clientsecret=${SERVICE_PRINCIPAL_CLIENT_SECRET}
+```
+
+7. Run the following to create a Secret Provider Class:
+
+```
+cat <<EOF | oc apply -f -
+apiVersion: secrets-store.csi.x-k8s.io/v1alpha1
+kind: SecretProviderClass
+metadata:
+  name: azure-kvname
+spec:
+  provider: azure
+  parameters:
+    usePodIdentity: "false"
+    useVMManagedIdentity: "false"
+    userAssignedIdentityID: ""
+    keyvaultName: "${KEYVAULT_NAME}"
+    objects: |
+      array:
+        - |
+          objectName: secret1              
+          objectType: secret
+          objectVersion: ""
+    tenantId: "${TENANT_ID}"
+EOF
+```
+
+8. Run the following test:
+
+```
+cat <<EOF | oc apply -f -
+kind: Pod
+apiVersion: v1
+metadata:
+  name: busybox-secrets-store-inline
+spec:
+  containers:
+  - name: busybox
+    image: image-registry.openshift-image-registry.svc:5000/openshift/tools
+    command:
+      - "/bin/sleep"
+      - "10000"
+    volumeMounts:
+    - name: secrets-store-inline
+      mountPath: "/mnt/secrets-store"
+      readOnly: true
+  volumes:
+    - name: secrets-store-inline
+      csi:
+        driver: secrets-store.csi.k8s.io
+        readOnly: true
+        volumeAttributes:
+          secretProviderClass: "azure-kvname"
+        nodePublishSecretRef:                       # Only required when using service principal mode
+          name: secrets-store-creds                 # Only required when using service principal mode
+EOF
+```
+
+9. Go to the terminal for the container and run `cd /mnt/secrets-store` and `cat secret1` to view the secret value.
+
