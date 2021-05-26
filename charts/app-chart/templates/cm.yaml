@@ -1,11 +1,13 @@
-{{- if .Values.config.enabled }}
+{{- if .Values.deployment.config.enabled }}
+{{- with .Values.deployment.config}}
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Values.config.name }}
+  name: {{ .name }}
 data:
-  {{- range $key, $val := .Values.config.values }}
+  {{- range $key, $val := .values }}
     {{ $key }}: {{ $val | quote }}
   {{- end}}
+{{- end}}
 {{- end}}

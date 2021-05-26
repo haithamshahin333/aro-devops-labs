@@ -1,11 +1,16 @@
+{{- if .Values.imagestream.enabled }}
+{{- with .Values.imagestream}}
+---
 apiVersion: image.openshift.io/v1
 kind: ImageStream
 metadata:
   labels:
-    app: {{ .Values.appName }}
-    app.kubernetes.io/component: {{ .Values.appName }}
-    app.kubernetes.io/instance: {{ .Values.appName }}
-  name: {{ .Values.appName }}
+    app: {{ $.Values.appName }}
+    app.kubernetes.io/component: {{ $.Values.appName }}
+    app.kubernetes.io/instance: {{ $.Values.appName }}
+  name: {{ $.Values.appName }}
 spec:
   lookupPolicy:
     local: true
+{{- end}}
+{{- end}}

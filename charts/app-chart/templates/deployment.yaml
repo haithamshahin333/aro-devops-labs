@@ -1,39 +1,44 @@
+{{- if .Values.deployment.enabled }}
+{{- with .Values.deployment}}
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   annotations:
-    image.openshift.io/triggers: '[{"from":{"kind":"ImageStreamTag","name":"{{ .Values.appName }}:latest"},"fieldPath":"spec.template.spec.containers[?(@.name==\"{{ .Values.appName }}\")].image"}]'
+    image.openshift.io/triggers: '[{"from":{"kind":"ImageStreamTag","name":"{{ $.Values.appName }}:latest"},"fieldPath":"spec.template.spec.containers[?(@.name==\"{{ $.Values.appName }}\")].image"}]'
   labels:
-    app: {{ .Values.appName }}
-    app.kubernetes.io/component: {{ .Values.appName }}
-    app.kubernetes.io/instance: {{ .Values.appName }}
-  name: {{ .Values.appName }}
+    app: {{ $.Values.appName }}
+    app.kubernetes.io/component: {{ $.Values.appName }}
+    app.kubernetes.io/instance: {{ $.Values.appName }}
+  name: {{ $.Values.appName }}
 spec:
   selector:
     matchLabels:
-      deployment: {{ .Values.appName }}
-  replicas: {{ .Values.replicaCount }}
+      deployment: {{ $.Values.appName }}
+  replicas: {{ .replicaCount }}
   template:
     metadata:
       labels:
-        deployment: {{ .Values.appName }}
+        deployment: {{ $.Values.appName }}
     spec:
       containers:
-      - name: {{ .Values.appName }}
-        image: {{ .Values.appName }}:latest
+      - name: {{ $.Values.appName }}
+        image: {{ $.Values.appName }}:latest
         ports:
-        - containerPort: {{ .Values.targetPort }}
-        {{- if .Values.config.enabled}}
+        - containerPort: {{ .targetPort }}
+        {{- if .config.enabled}}
         envFrom:
         - configMapRef:
-            name: {{ .Values.config.name }}
+            name: {{ .config.name }}
         {{- end}}
-        {{- if .Values.secret.enabled}}
+        {{- if .secret.enabled}}
         volumeMounts:
         - name: secret-volume-mount
           mountPath: /etc/secret-volume
       volumes:
       - name: secret-volume-mount
         secret:
-          secretName: {{ .Values.secret.name }}
+          secretName: {{ .secret.name }}
       {{- end}}
+{{- end}}
+{{- end}}

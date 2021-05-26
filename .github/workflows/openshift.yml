@@ -34,8 +34,8 @@ name: OpenShift
 # ⬇️  Modify the fields marked with ⬇️ to fit your project, and create any secrets that are referenced.
 # https://docs.github.com/en/free-pro-team@latest/actions/reference/encrypted-secrets
 env:
-  APP_NAME: node-express-app
-  SOURCE_DIR: src
+  APP_NAME: node-express-mongo-app
+  SOURCE_DIR: express-mongo-app
   NODE_VERSION: 12
 
 on:
@@ -44,7 +44,7 @@ on:
   
   push:
     # Edit to the branch(es) you want to build and deploy on each push.
-    branches: [ lab-4 ]
+    branches: [ lab-7 ]
 
 jobs:
   openshift-ci-cd:

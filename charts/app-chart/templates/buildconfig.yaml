@@ -1,24 +1,29 @@
+{{- if .Values.buildconfig.enabled }}
+{{- with .Values.buildconfig}}
+---
 apiVersion: build.openshift.io/v1
 kind: BuildConfig
 metadata:
   labels:
-    app: {{ .Values.appName }}
-    app.kubernetes.io/component: {{ .Values.appName }}
-    app.kubernetes.io/instance: {{ .Values.appName }}
-  name: {{ .Values.appName }}
+    app: {{ $.Values.appName }}
+    app.kubernetes.io/component: {{ $.Values.appName }}
+    app.kubernetes.io/instance: {{ $.Values.appName }}
+  name: {{ $.Values.appName }}
 spec:
   output:
     to:
       kind: ImageStreamTag
-      name: {{ .Values.appName }}:latest
+      name: {{ $.Values.appName }}:latest
   source:
     type: Binary
   strategy:
     sourceStrategy:
       from:
         kind: ImageStreamTag
-        name: {{ .Values.baseImage }}
+        name: {{ .baseImage }}
         namespace: openshift
     type: Source
   triggers:
   - type: ConfigChange
+{{- end}}
+{{- end}}

@@ -1,16 +1,21 @@
+{{- if .Values.service.enabled }}
+{{- with .Values.service}}
+---
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Values.appName }}
+  name: {{ $.Values.appName }}
   labels:
-    app: {{ .Values.appName }}
-    app.kubernetes.io/component: {{ .Values.appName }}
-    app.kubernetes.io/instance: {{ .Values.appName }}
+    app: {{ $.Values.appName }}
+    app.kubernetes.io/component: {{ $.Values.appName }}
+    app.kubernetes.io/instance: {{ $.Values.appName }}
 spec:
   ports:
     - port: 80
-      targetPort: {{ .Values.targetPort }}
+      targetPort: {{ .targetPort }}
       protocol: TCP
       name: 80-http
   selector:
-    deployment: {{ .Values.appName }}
+    deployment: {{ $.Values.appName }}
+{{- end}}
+{{- end}}

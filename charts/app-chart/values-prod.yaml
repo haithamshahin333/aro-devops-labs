@@ -1,0 +1,48 @@
+# Default values for chart.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+appName: node-express-mongo-app
+containerPort: 8080
+
+imagestream:
+  enabled: true
+
+route:
+  enabled: true
+
+service:
+  enabled: true
+  targetPort: 8080
+
+buildconfig:
+  enabled: false
+  baseImage: nodejs:12-ubi8
+
+deployment:
+  enabled: true
+  targetPort: 8080
+  replicaCount: 1
+  config:
+    enabled: true
+    name: config-map-app
+    values:
+      DATABASE_URL: mongodb://mongodb-prod:27017
+      PORT: 8080
+  secret:
+    enabled: false
+    name: secret-app
+    values:
+      DATABASE_URL: mongodb://mongodb:27017
+      PORT: 8080
+  
+mongodb:
+  fullnameOverride: mongodb-prod #override name so that it isn't pinned to release name
+  auth:
+    enabled: false
+  persistence:
+    enabled: false
+  containerSecurityContext:
+    enabled: false
+  podSecurityContext:
+    enabled: false
