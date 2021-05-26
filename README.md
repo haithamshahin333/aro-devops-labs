@@ -67,7 +67,7 @@ helm install sonarqube-lab-7 redhat-cop/sonarqube
 ```
 oc create sa github-actions-sa
 
-oc policy add-role-to-user edit -z github-actions-sa        # Service Account is editor for all projects
+oc adm policy add-cluster-role-to-user edit -z github-actions-sa        # Service Account is editor for all projects
 
 # Now, we have to find the name of the secret in which the Service Account's apiserver token is stored.
 # The following command will output two secrets. 
