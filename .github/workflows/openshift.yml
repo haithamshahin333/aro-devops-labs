@@ -44,6 +44,7 @@ on:
   
   push:
     # Edit to the branch(es) you want to build and deploy on each push.
+    #test
     branches: [ lab-7 ]
 
 jobs:
