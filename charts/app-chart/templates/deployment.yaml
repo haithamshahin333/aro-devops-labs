@@ -24,6 +24,7 @@ spec:
       containers:
       - name: {{ $.Values.appName }}
         image: {{ $.Values.image }}
+        imagePullPolicy: Always
         ports:
         - containerPort: {{ .targetPort }}
         {{- if .config.enabled}}

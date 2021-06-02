@@ -7,7 +7,7 @@ containerPort: 8080
 image: <ACR IMAGE NAME>
 
 imagestream:
-  enabled: true
+  enabled: false
 
 route:
   enabled: true
