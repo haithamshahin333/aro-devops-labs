@@ -13,11 +13,13 @@ Pre-reqs:
 
 ### Update Build Workflow with Base Image
 
-  > Info: Up to this point, we've leveraged the S2I build process only. We will update the buildconfig to now leverage a base image stored in our container registry and use a Dockerfile to build our app.
+> Info: Up to this point, we've leveraged the S2I build process only. We will update the buildconfig to now leverage a base image stored in our container registry and use a Dockerfile to build our app.
 
 1. Run `oc new-project lab-10`.
 
-2. Run `helm install lab-10-release charts/app-chart/. -f charts/app-chart/values-dev.yaml`. 
+2. Run `helm install lab-10-release charts/app-chart/. -f charts/app-chart/values-dev.yaml`.
+
+  > Info: Notice the Dockerfile in the `express-mongo-app` folder. This was the new piece that allows us to run a docker build in the cluster.
 
 ### Implement Pull Request Workflow with Ephemeral Environment on Feature Branch
 
