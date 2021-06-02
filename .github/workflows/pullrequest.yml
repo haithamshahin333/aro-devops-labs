@@ -58,11 +58,11 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Install Dependencies
-        working-directory: ${{ env.SOURCE_DIR }}
-        run: |
-          # npm config set registry ${{ secrets.NEXUS_PROXY }}
-          npm install
+      # - name: Install Dependencies
+      #   working-directory: ${{ env.SOURCE_DIR }}
+      #   run: |
+      #     # npm config set registry ${{ secrets.NEXUS_PROXY }}
+      #     npm install
 
       # - run: npm test
       #   working-directory: ${{ env.SOURCE_DIR }}
@@ -85,4 +85,5 @@ jobs:
         run: |
           echo "BRANCH: $GITHUB_HEAD_REF"
           oc new-project pull-request-$GITHUB_HEAD_REF
+          helm dependency update charts/app-chart/.
           helm install deploy charts/app-chart/. -f charts/app-chart/values-dev.yaml --set buildconfigdocker.ref=$GITHUB_HEAD_REF

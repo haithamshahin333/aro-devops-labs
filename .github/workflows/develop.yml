@@ -57,16 +57,16 @@ jobs:
 
       - uses: actions/checkout@v2
 
-      - name: Setup node
-        uses: actions/setup-node@v2
-        with:
-          node-version: ${{ env.NODE_VERSION }}
+      # - name: Setup node
+      #   uses: actions/setup-node@v2
+      #   with:
+      #     node-version: ${{ env.NODE_VERSION }}
 
-      - name: Install Dependencies
-        working-directory: ${{ env.SOURCE_DIR }}
-        run: |
-          # npm config set registry ${{ secrets.NEXUS_PROXY }}
-          npm install
+      # - name: Install Dependencies
+      #   working-directory: ${{ env.SOURCE_DIR }}
+      #   run: |
+      #     # npm config set registry ${{ secrets.NEXUS_PROXY }}
+      #     npm install
 
       # - run: npm test
       #   working-directory: ${{ env.SOURCE_DIR }}
