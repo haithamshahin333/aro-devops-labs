@@ -36,6 +36,7 @@ name: Develop-Build
 env:
   APP_NAME: node-express-mongo-app
   SOURCE_DIR: express-mongo-app
+  ACR_REPOSITORY: develop-lab-10
   NODE_VERSION: 12
 
 on:
@@ -51,18 +52,21 @@ jobs:
     environment: production
 
     steps:
+
+      # https://github.com/redhat-actions/oc-login#readme
+
       - uses: actions/checkout@v2
 
-      - name: Setup node
-        uses: actions/setup-node@v2
-        with:
-          node-version: ${{ env.NODE_VERSION }}
+      # - name: Setup node
+      #   uses: actions/setup-node@v2
+      #   with:
+      #     node-version: ${{ env.NODE_VERSION }}
 
-      - name: Install Dependencies
-        working-directory: ${{ env.SOURCE_DIR }}
-        run: |
-          # npm config set registry ${{ secrets.NEXUS_PROXY }}
-          npm install
+      # - name: Install Dependencies
+      #   working-directory: ${{ env.SOURCE_DIR }}
+      #   run: |
+      #     # npm config set registry ${{ secrets.NEXUS_PROXY }}
+      #     npm install
 
       # - run: npm test
       #   working-directory: ${{ env.SOURCE_DIR }}
@@ -71,6 +75,18 @@ jobs:
       #   env:
       #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       #     SONAR_HOST_URL: ${{ secrets.SONAR_ROUTE }}
+
+      - uses: azure/docker-login@v1
+        with:
+          login-server: ${{ secrets.ACR_LOGIN_SERVER }}
+          username: ${{ secrets.ACR_REGISTRY_USERNAME }}
+          password: ${{ secrets.ACR_REGISTRY_PASSWORD }}
+
+      - name: Build and Push Image to ACR
+        working-directory: ${{ env.SOURCE_DIR }}
+        run: |
+          docker build . -t ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.ACR_REPOSITORY}}:${{ github.sha }}
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.ACR_REPOSITORY}}:${{ github.sha }}
 
       # https://github.com/redhat-actions/oc-login#readme
       - name: Log in to OpenShift
@@ -83,4 +99,12 @@ jobs:
 
       - name: Create an ephemeral project
         run: |
-          printenv
+          oc project develop-lab-10-qa
+          helm dependency update charts/app-chart/.
+          helm upgrade deploy-dev-qa charts/app-chart/. -f charts/app-chart/values-test.yaml --set image=${{ secrets.ACR_LOGIN_SERVER }}/${{ env.ACR_REPOSITORY}}:${{ github.sha }}
+
+      - name: Create an ephemeral project
+        run: |
+          oc project develop-lab-10-staging
+          helm dependency update charts/app-chart/.
+          helm upgrade deploy-dev-staging charts/app-chart/. -f charts/app-chart/values-test.yaml --set image=${{ secrets.ACR_LOGIN_SERVER }}/${{ env.ACR_REPOSITORY}}:${{ github.sha }}
