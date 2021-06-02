@@ -15,7 +15,7 @@ function DataEntryForm() {
                 <div>
                     <input type="text" name="job" id="job" placeholder="job" />
                 </div>
-                <input type="submit" />
+                <input type="input" />
             </form>
         </div>
     );
