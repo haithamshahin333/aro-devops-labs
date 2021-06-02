@@ -85,4 +85,5 @@ jobs:
         run: |
           echo "BRANCH: $GITHUB_HEAD_REF"
           oc new-project pull-request-$GITHUB_HEAD_REF
+          helm dependency build charts/app-chart/.
           helm install deploy charts/app-chart/. -f charts/app-chart/values-dev.yaml --set buildconfigdocker.ref=$GITHUB_HEAD_REF
