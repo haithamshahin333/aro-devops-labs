@@ -13,9 +13,9 @@ function DataEntryForm() {
                     />
                 </div>
                 <div>
-                    <input type="text" name="job" id="job" placeholder="job" />
+                    <input type="text" name="job" id="job" placeholder="test job" />
                 </div>
-                <input type="input" />
+                <input type="submit" />
             </form>
         </div>
     );
