@@ -4,6 +4,7 @@
 
 appName: node-express-mongo-app
 containerPort: 8080
+image: node-express-mongo-app:latest
 
 imagestream:
   enabled: true

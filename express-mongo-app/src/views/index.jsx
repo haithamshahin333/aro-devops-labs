@@ -13,7 +13,7 @@ function DataEntryForm() {
                     />
                 </div>
                 <div>
-                    <input type="text" name="job" id="job" placeholder="job" />
+                    <input type="text" name="job" id="job" placeholder="test job" />
                 </div>
                 <input type="submit" />
             </form>
@@ -25,8 +25,8 @@ function DataList({ dataItems }) {
     return (
         <table>
             <thead>
-                <th>Name</th>
-                <th>Job</th>
+                <th>To Do Item Name</th>
+                <th>Job Name</th>
                 <th>
                     Delete{' '}
                     {dataItems.length > 1 && <a href="/delete?all=true">all</a>}
