@@ -4,6 +4,7 @@
 
 appName: node-express-mongo-app
 containerPort: 8080
+image: <ACR IMAGE NAME>
 
 imagestream:
   enabled: true
@@ -19,15 +20,29 @@ buildconfig:
   enabled: false
   baseImage: nodejs:12-ubi8
 
+buildconfigdocker:
+  enabled: false
+  gitUri: https://github.com/haithamshahin333/aro-devops-labs.git
+  contextDir: express-mongo-app
+  ref: lab-10
+  baseImage: nodejs:12-ubi8
+
 deployment:
   enabled: true
   targetPort: 8080
   replicaCount: 1
+  volume:
+    enabled: false
+    volumeName: test-volume
+    claimName: example
+    size: 1Gi
+    accessMode: ReadWriteOnce
+    storageClassName: ""
   config:
     enabled: true
     name: config-map-app
     values:
-      DATABASE_URL: mongodb://mongodb-prod:27017
+      DATABASE_URL: mongodb://mongodb:27017
       PORT: 8080
   secret:
     enabled: false
@@ -37,11 +52,11 @@ deployment:
       PORT: 8080
   
 mongodb:
-  fullnameOverride: mongodb-prod #override name so that it isn't pinned to release name
+  fullnameOverride: mongodb #override name so that it isn't pinned to release name
   auth:
     enabled: false
   persistence:
-    enabled: false
+    enabled: true
   containerSecurityContext:
     enabled: false
   podSecurityContext:

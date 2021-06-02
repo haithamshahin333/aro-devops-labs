@@ -36,6 +36,7 @@ name: Build-Lab-10
 env:
   APP_NAME: node-express-mongo-app
   SOURCE_DIR: express-mongo-app
+  ACR_REPOSITORY: lab-10
   NODE_VERSION: 12
 
 on:
@@ -51,18 +52,21 @@ jobs:
     environment: production
 
     steps:
+
+      # https://github.com/redhat-actions/oc-login#readme
+
       - uses: actions/checkout@v2
 
-      - name: Setup node
-        uses: actions/setup-node@v2
-        with:
-          node-version: ${{ env.NODE_VERSION }}
+      # - name: Setup node
+      #   uses: actions/setup-node@v2
+      #   with:
+      #     node-version: ${{ env.NODE_VERSION }}
 
-      - name: Install Dependencies
-        working-directory: ${{ env.SOURCE_DIR }}
-        run: |
-          # npm config set registry ${{ secrets.NEXUS_PROXY }}
-          npm install
+      # - name: Install Dependencies
+      #   working-directory: ${{ env.SOURCE_DIR }}
+      #   run: |
+      #     # npm config set registry ${{ secrets.NEXUS_PROXY }}
+      #     npm install
 
       # - run: npm test
       #   working-directory: ${{ env.SOURCE_DIR }}
@@ -81,8 +85,8 @@ jobs:
       - name: Build and Push Image to ACR
         working-directory: ${{ env.SOURCE_DIR }}
         run: |
-          docker build . -t ${{ secrets.ACR_LOGIN_SERVER }}/lab-10:${{ github.sha }}
-          docker push ${{ secrets.ACR_LOGIN_SERVER }}/lab-10:${{ github.sha }}
+          docker build . -t ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.ACR_REPOSITORY}}:${{ github.sha }}
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.ACR_REPOSITORY}}:${{ github.sha }}
 
       # https://github.com/redhat-actions/oc-login#readme
       - name: Log in to OpenShift
@@ -93,6 +97,8 @@ jobs:
           insecure_skip_tls_verify: false
           namespace: ${{ secrets.OPENSHIFT_NAMESPACE }}
 
-      - name: Create an ephemeral project
+      - name: Deploy to Lab 10 Staging
         run: |
-          printenv
+          oc project lab-10-staging
+          helm dependency update charts/app-chart/.
+          helm upgrade deploy-lab-10-staging charts/app-chart/. -f charts/app-chart/values-prod.yaml --set image=${{ secrets.ACR_LOGIN_SERVER }}/${{ env.ACR_REPOSITORY}}:${{ github.sha }}
