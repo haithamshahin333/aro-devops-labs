@@ -60,7 +60,7 @@ az keyvault secret set --vault-name ${KEYVAULT_NAME} --name secret1 --value "Hel
 ```
 # Create a service principal to access keyvault
 az ad sp create-for-rbac --skip-assignment --name http://secrets-store-test-aro
-expor SERVICE_PRINCIPAL_CLIENT_SECRET=<password from output of prior command>
+export SERVICE_PRINCIPAL_CLIENT_SECRET=<password from output of prior command>
 export SERVICE_PRINCIPAL_CLIENT_ID=<appId from output of earlier command>
 
 az keyvault set-policy -n ${KEYVAULT_NAME} --secret-permissions get --spn ${SERVICE_PRINCIPAL_CLIENT_ID} -g ${KEYVAULT_RESOURCE_GROUP}
@@ -130,3 +130,119 @@ EOF
 
 9. Go to the terminal for the container and run `cd /mnt/secrets-store` and `cat secret1` to view the secret value.
 
+### ACR Integration
+
+Reference List:
+- https://docs.microsoft.com/en-us/azure/openshift/howto-use-acr-with-aro
+- https://docs.microsoft.com/en-us/azure/container-registry/container-registry-image-tag-version
+- https://docs.microsoft.com/en-us/azure/container-registry/container-registry-get-started-azure-cli
+- https://docs.microsoft.com/en-us/azure/container-registry/container-registry-auth-kubernetes
+
+1. Let's create an ACR Instance in the ARO Resource Group per the following commands:
+
+  ```
+  # Create an ACR Instance in your resource group with a basic sku
+  export RG_NAME=<resource group>
+  export ACR_NAME=<acr name>
+
+  az acr create --resource-group $RG_NAME --name $ACR_NAME --sku Basic
+  ```
+
+  > Info: Confirm the ACR Instance is in the resource group in the portal.
+
+2. Create a service principal that can authenticate against the ACR Instance:
+
+  ```
+  #!/bin/bash
+
+  # Modify for your environment.
+  # ACR_NAME: The name of your Azure Container Registry (set in previous step)
+  # SERVICE_PRINCIPAL_NAME: Must be unique within your AD tenant
+  export SERVICE_PRINCIPAL_NAME=acr-aro-service-principal
+
+  # Obtain the full registry ID for subsequent command args
+  export ACR_REGISTRY_ID=$(az acr show --name $ACR_NAME --resource-group $RG_NAME --query id --output tsv)
+
+  # Create the service principal with rights scoped to the registry.
+  # Default permissions are for docker pull access. Modify the '--role'
+  # argument value as desired:
+  # acrpull:     pull only
+  # acrpush:     push and pull
+  # owner:       push, pull, and assign roles
+  SP_PASSWD=$(az ad sp create-for-rbac --name http://$SERVICE_PRINCIPAL_NAME --scopes $ACR_REGISTRY_ID --role acrpull --query password --output tsv)
+  SP_APP_ID=$(az ad sp show --id http://$SERVICE_PRINCIPAL_NAME --query appId --output tsv)
+
+  # Output the service principal's credentials; use these in your services and
+  # applications to authenticate to the container registry.
+  echo "Service principal ID: $SP_APP_ID"
+  echo "Service principal password: $SP_PASSWD"
+  ```
+
+3. Create an impage pull secret in a test project to get the proper docker config:
+
+  ```
+  # Create a test project
+  oc new-project test-project-pull-secret
+
+  # Create pull secret in the test project
+  oc create secret docker-registry test-pull-secret-acr \
+      --namespace test-project-pull-secret \
+      --docker-server=$ACR_NAME.azurecr.io \
+      --docker-username=$SP_APP_ID \
+      --docker-password=$SP_PASSWD
+  ```
+
+  > Info: Once the secret is created, navigate to the console and view the .dockerconfigjson associated with the secret. We will add this to the global pull secret in the cluster so we can pull from ACR globally and not need to create this secret in each project we use.
+
+4. Create a file locally so we can update the global secret. Run `touch pullsecret.json`.
+
+  > Note: Ensure this file is not committed since it has your secrets. It should be included in the `.gitignore` file.
+
+5. In the console, go to the `openshift-config` project and copy the pull-secret secret data to the file. It should be formatted as a JSON. From there, navigate to the secret you created in the test project and copy the acr section of that secret into the `pullsecret.json` file. This is how we will add this auth mechanism for the custom ACR instance.
+
+6. Run `oc set data secret/pull-secret -n openshift-config --from-file=.dockerconfigjson=pullsecret.json`. Confirm that the secret has been updated in the console.
+
+7. To test and confirm the registry is integrated with the cluster, let's push the app image to our ACR instance. To do this, we will need access to the built-in registry in OpenShift.
+
+8. Run the following commands:
+
+  ```
+  # Switch to project "openshift-image-registry"
+  oc project openshift-image-registry
+
+  # Expose the registry using "DefaultRoute"
+  oc patch configs.imageregistry.operator.openshift.io/cluster --patch '{"spec":{"defaultRoute":true}}' --type=merge
+
+  # Note: the value of "Container Registry URL" in the output is the fully qualified registry name.
+  HOST=$(oc get route default-route --template='{{ .spec.host }}')
+  echo "Container Registry URL: $HOST"
+  ```
+
+9. Run `docker login -u kubeadmin -p $(oc whoami -t) $HOST` to login to the registry locally. From here, you can pull the image that was built in prior labs (i.e. run `docker pull $HOST/<PROJECT>/<NAME>:<TAG>`).
+
+10. Run the following commands to tag the image and push it to your ACR instance:
+
+  ```
+  # Tag the image locally for the ACR Registry
+  docker tag $HOST/<PROJECT>/<NAME>:<TAG> $ACR_NAME.azurecr.io/lab9/node-app:latest
+
+  # Login to the ACR instance locally
+  az acr login -n $ACR_NAME -g $RG_NAME
+
+  # Push the image to the ACR Instance
+  docker push $ACR_NAME.azurecr.io/lab9/node-app:latest
+  ```
+
+  > Info: Confirm in the Azure Portal that the image exists in the ACR Instance.
+
+11. Deploy an instance of the app with this image in ACR by updating the config value for the `image` value in the `charts/app-chart/values-acr.yaml` file. Then run the following:
+
+  ```
+  # Create new project
+  oc new-project lab-9-acr-deploy
+
+  # Run helm install with custom values file for ACR Image
+  helm install test charts/app-chart/. -f charts/app-chart/values-acr.yaml
+  ```
+
+  > Info: Confirm the app is up in the console.

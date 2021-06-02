@@ -1,3 +1,6 @@
+.dockerconfigjson
+pullsecret.json
+
 # Logs
 logs
 *.log
