@@ -29,7 +29,7 @@
 # Also see our GitHub organization, https://github.com/redhat-actions/
 # ▶️ See a video of how to set up this workflow at https://www.youtube.com/watch?v=6hgBO-1pKho
 
-name: Pull-Request
+name: Develop-Build
 
 # ⬇️  Modify the fields marked with ⬇️ to fit your project, and create any secrets that are referenced.
 # https://docs.github.com/en/free-pro-team@latest/actions/reference/encrypted-secrets
@@ -83,5 +83,4 @@ jobs:
 
       - name: Create an ephemeral project
         run: |
-          echo $GITHUB_REF
           printenv
