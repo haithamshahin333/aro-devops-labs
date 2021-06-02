@@ -28,3 +28,12 @@ Pre-reqs:
 ### Implement Merge Workflow into Main Branch (Promote Image to MainBranch-Dev and MainBranch-Staging)
 
 ### Implement Release Workflow to Promote to Production
+
+### Helper ACR Commands
+
+```
+# Show Repository Manifests
+az acr repository show-manifests -n $ACR_NAME -g $RG_NAME --repository lab-10
+
+
+```
