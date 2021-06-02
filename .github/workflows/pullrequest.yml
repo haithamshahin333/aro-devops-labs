@@ -41,7 +41,7 @@ env:
 on:
   pull_request:
     # Edit to the branch(es) you want to build and deploy on each push.
-    branches: [develop-lab10]
+    branches: [develop-lab-10]
 
 jobs:
   openshift-ci-cd:
