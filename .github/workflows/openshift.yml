@@ -29,7 +29,7 @@
 # Also see our GitHub organization, https://github.com/redhat-actions/
 # ▶️ See a video of how to set up this workflow at https://www.youtube.com/watch?v=6hgBO-1pKho
 
-name: Develop-Build
+name: Build-Lab-10
 
 # ⬇️  Modify the fields marked with ⬇️ to fit your project, and create any secrets that are referenced.
 # https://docs.github.com/en/free-pro-team@latest/actions/reference/encrypted-secrets
@@ -71,6 +71,18 @@ jobs:
       #   env:
       #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       #     SONAR_HOST_URL: ${{ secrets.SONAR_ROUTE }}
+
+      - uses: azure/docker-login@v1
+        with:
+          login-server: ${{ secrets.ACR_LOGIN_SERVER }}
+          username: ${{ secrets.ACR_REGISTRY_USERNAME }}
+          password: ${{ secrets.ACR_REGISTRY_PASSWORD }}
+
+      - name: Build and Push Image to ACR
+        working-directory: ${{ env.SOURCE_DIR }}
+        run: |
+          docker build . -t ${{ secrets.ACR_LOGIN_SERVER }}/lab-10:${{ github.sha }}
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/lab-10:${{ github.sha }}
 
       # https://github.com/redhat-actions/oc-login#readme
       - name: Log in to OpenShift
