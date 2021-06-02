@@ -11,6 +11,8 @@ Reference List:
 - https://github.com/aramase/secrets-store-csi-driver-provider-azure/blob/openshift-docs/website/content/en/configurations/deploy-in-openshift.md
 - https://azure.github.io/secrets-store-csi-driver-provider-azure/demos/standard-walkthrough/
 - https://secrets-store-csi-driver.sigs.k8s.io/topics/best-practices.html
+- https://docs.openshift.com/container-platform/4.7/openshift_images/managing_images/using-image-pull-secrets.html
+- https://docs.openshift.com/container-platform/4.7/registry/accessing-the-registry.html
 
 1. Run the following:
 
