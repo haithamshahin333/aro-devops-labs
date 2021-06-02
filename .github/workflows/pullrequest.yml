@@ -83,5 +83,5 @@ jobs:
 
       - name: Create an ephemeral project
         run: |
-          echo $GITHUB_REF
-          printenv
+          oc new-project pull-request-$GITHUB_HEAD_REF
+          helm install deploy charts/app-chart/. -f values-dev.yaml --set buildconfigdocker.ref=$GITHUB_HEAD_REF
