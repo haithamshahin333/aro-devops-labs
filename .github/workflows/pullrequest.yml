@@ -83,4 +83,4 @@ jobs:
 
       - name: Create an ephemeral project
         run: |
-          oc new-project pull-request-${{ GITHUB_BASE_REF }}
+          echo $GITHUB_REF
