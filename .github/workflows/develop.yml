@@ -52,6 +52,20 @@ jobs:
     environment: production
 
     steps:
+
+      # https://github.com/redhat-actions/oc-login#readme
+      - name: Log in to OpenShift
+        uses: redhat-actions/oc-login@v1
+        with:
+          openshift_server_url: ${{ secrets.OPENSHIFT_SERVER }}
+          openshift_token: ${{ secrets.OPENSHIFT_TOKEN }}
+          insecure_skip_tls_verify: false
+          namespace: ${{ secrets.OPENSHIFT_NAMESPACE }}
+
+      - name: Create an ephemeral project
+        run: |
+          oc new-project testing-project-creation
+
       - uses: actions/checkout@v2
 
       - name: Setup node
@@ -85,15 +99,15 @@ jobs:
           docker build . -t ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.ACR_REPOSITORY}}:${{ github.sha }}
           docker push ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.ACR_REPOSITORY}}:${{ github.sha }}
 
-      # https://github.com/redhat-actions/oc-login#readme
-      - name: Log in to OpenShift
-        uses: redhat-actions/oc-login@v1
-        with:
-          openshift_server_url: ${{ secrets.OPENSHIFT_SERVER }}
-          openshift_token: ${{ secrets.OPENSHIFT_TOKEN }}
-          insecure_skip_tls_verify: false
-          namespace: ${{ secrets.OPENSHIFT_NAMESPACE }}
+      # # https://github.com/redhat-actions/oc-login#readme
+      # - name: Log in to OpenShift
+      #   uses: redhat-actions/oc-login@v1
+      #   with:
+      #     openshift_server_url: ${{ secrets.OPENSHIFT_SERVER }}
+      #     openshift_token: ${{ secrets.OPENSHIFT_TOKEN }}
+      #     insecure_skip_tls_verify: false
+      #     namespace: ${{ secrets.OPENSHIFT_NAMESPACE }}
 
-      - name: Create an ephemeral project
-        run: |
-          printenv
+      # - name: Create an ephemeral project
+      #   run: |
+      #     printenv
