@@ -85,12 +85,12 @@ jobs:
       - name: Tag Image to Latest
         working-directory: ${{ env.SOURCE_DIR }}
         run: |
-          echo ${{ GITHUB_REF }}
+          echo $GITHUB_REF
           docker pull ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.ACR_REPOSITORY}}:${{ github.sha }}
           docker tag ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.ACR_REPOSITORY}}:${{ github.sha }} ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.ACR_REPOSITORY}}:latest
           docker push ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.ACR_REPOSITORY}}:latest
-          docker tag ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.ACR_REPOSITORY}}:latest ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.ACR_REPOSITORY}}:${{ GITHUB_REF }}
-          docker push ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.ACR_REPOSITORY}}:${{ GITHUB_REF }}
+          docker tag ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.ACR_REPOSITORY}}:latest ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.ACR_REPOSITORY}}:$GITHUB_REF
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.ACR_REPOSITORY}}:$GITHUB_REF
 
       # https://github.com/redhat-actions/oc-login#readme
       - name: Log in to OpenShift
