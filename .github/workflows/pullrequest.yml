@@ -87,4 +87,4 @@ jobs:
           oc process -f project-template.yaml -p NAMESPACE=pr-$GITHUB_HEAD_REF -p NAMESPACE_DISPLAY_NAME=pr-$GITHUB_HEAD_REF | oc apply -f -
           oc project pr-$GITHUB_HEAD_REF
           helm dependency update charts/app-chart/.
-          helm install deploy charts/app-chart/. -f charts/app-chart/values-dev.yaml --set buildconfigdocker.ref=$GITHUB_HEAD_REF
+          helm template deploy charts/app-chart/. -f charts/app-chart/values-dev.yaml --set buildconfigdocker.ref=$GITHUB_HEAD_REF | oc apply -f -
