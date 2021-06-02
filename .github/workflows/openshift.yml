@@ -29,7 +29,7 @@
 # Also see our GitHub organization, https://github.com/redhat-actions/
 # ▶️ See a video of how to set up this workflow at https://www.youtube.com/watch?v=6hgBO-1pKho
 
-name: OpenShift
+name: Develop-Build
 
 # ⬇️  Modify the fields marked with ⬇️ to fit your project, and create any secrets that are referenced.
 # https://docs.github.com/en/free-pro-team@latest/actions/reference/encrypted-secrets
@@ -39,12 +39,10 @@ env:
   NODE_VERSION: 12
 
 on:
-  # https://docs.github.com/en/free-pro-team@latest/actions/reference/events-that-trigger-workflows
-  workflow_dispatch:
-  
   push:
     # Edit to the branch(es) you want to build and deploy on each push.
-    branches: [ lab-7 ]
+    branches:
+      - lab-10
 
 jobs:
   openshift-ci-cd:
@@ -63,16 +61,16 @@ jobs:
       - name: Install Dependencies
         working-directory: ${{ env.SOURCE_DIR }}
         run: |
-          npm config set registry ${{ secrets.NEXUS_PROXY }}
+          # npm config set registry ${{ secrets.NEXUS_PROXY }}
           npm install
 
       # - run: npm test
       #   working-directory: ${{ env.SOURCE_DIR }}
 
-      - uses: docker://sonarsource/sonar-scanner-cli:latest
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_ROUTE }}
+      # - uses: docker://sonarsource/sonar-scanner-cli:latest
+      #   env:
+      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      #     SONAR_HOST_URL: ${{ secrets.SONAR_ROUTE }}
 
       # https://github.com/redhat-actions/oc-login#readme
       - name: Log in to OpenShift
@@ -83,20 +81,6 @@ jobs:
           insecure_skip_tls_verify: false
           namespace: ${{ secrets.OPENSHIFT_NAMESPACE }}
 
-      - name: Start oc S2I build
+      - name: Create an ephemeral project
         run: |
-          oc start-build ${{ env.APP_NAME }} --from-dir=${{ env.SOURCE_DIR }} --follow
-
-      # Run Validation Check to confirm deployment was successful
-
-      - name: Promote Image to Test
-        run: |
-          oc tag ${{ env.APP_NAME }}:latest ${{ secrets.OPENSHIFT_PROJECT_TEST }}/${{ env.APP_NAME }}:latest
-
-      # Restart DB for fresh instance
-
-      # Run Validation Check / Automated Tests
-
-      - name: Promote Image to Prod
-        run: |
-          oc tag ${{ env.APP_NAME }}:latest ${{ secrets.OPENSHIFT_PROJECT_PROD }}/${{ env.APP_NAME }}:latest
+          printenv
