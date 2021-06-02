@@ -1,4 +1,4 @@
-FROM node:12
+FROM node:14
 USER 0
 WORKDIR /usr/src/app
 COPY . /usr/src/app

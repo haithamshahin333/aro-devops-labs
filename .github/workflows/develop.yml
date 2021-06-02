@@ -36,6 +36,7 @@ name: Develop-Build
 env:
   APP_NAME: node-express-mongo-app
   SOURCE_DIR: express-mongo-app
+  ACR_REPOSITORY: develop-lab-10
   NODE_VERSION: 12
 
 on:
@@ -71,6 +72,18 @@ jobs:
       #   env:
       #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       #     SONAR_HOST_URL: ${{ secrets.SONAR_ROUTE }}
+
+      - uses: azure/docker-login@v1
+        with:
+          login-server: ${{ secrets.ACR_LOGIN_SERVER }}
+          username: ${{ secrets.ACR_REGISTRY_USERNAME }}
+          password: ${{ secrets.ACR_REGISTRY_PASSWORD }}
+
+      - name: Build and Push Image to ACR
+        working-directory: ${{ env.SOURCE_DIR }}
+        run: |
+          docker build . -t ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.ACR_REPOSITORY}}:${{ github.sha }}
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.ACR_REPOSITORY}}:${{ github.sha }}
 
       # https://github.com/redhat-actions/oc-login#readme
       - name: Log in to OpenShift
