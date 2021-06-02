@@ -22,7 +22,7 @@ buildconfig:
 buildconfigdocker:
   enabled: true
   gitUri: https://github.com/haithamshahin333/aro-devops-labs.git
-  contextDir: src
+  contextDir: express-mongo-app
   ref: lab-10
   baseImage: nodejs:12-ubi8
 
