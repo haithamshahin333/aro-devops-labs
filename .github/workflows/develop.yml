@@ -102,3 +102,9 @@ jobs:
           oc project develop-lab-10-qa
           helm dependency update charts/app-chart/.
           helm install deploy-dev-qa charts/app-chart/. -f charts/app-chart/values-test.yaml --set image=${{ secrets.ACR_LOGIN_SERVER }}/${{ env.ACR_REPOSITORY}}:${{ github.sha }}
+
+      - name: Create an ephemeral project
+        run: |
+          oc project develop-lab-10-staging
+          helm dependency update charts/app-chart/.
+          helm install deploy-dev-staging charts/app-chart/. -f charts/app-chart/values-test.yaml --set image=${{ secrets.ACR_LOGIN_SERVER }}/${{ env.ACR_REPOSITORY}}:${{ github.sha }}
