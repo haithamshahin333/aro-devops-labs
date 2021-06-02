@@ -9,7 +9,7 @@ function DataEntryForm() {
                         type="text"
                         name="name"
                         id="name"
-                        placeholder="name"
+                        placeholder="new feature name"
                     />
                 </div>
                 <div>
