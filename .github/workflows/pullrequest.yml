@@ -79,9 +79,10 @@ jobs:
           openshift_server_url: ${{ secrets.OPENSHIFT_SERVER }}
           openshift_token: ${{ secrets.OPENSHIFT_TOKEN }}
           insecure_skip_tls_verify: false
-          namespace: default
+          namespace: ${{ secrets.OPENSHIFT_NAMESPACE }}
 
       - name: Create an ephemeral project
         run: |
+          echo "BRANCH: $GITHUB_HEAD_REF"
           oc new-project pull-request-$GITHUB_HEAD_REF
           helm install deploy charts/app-chart/. -f values-dev.yaml --set buildconfigdocker.ref=$GITHUB_HEAD_REF
