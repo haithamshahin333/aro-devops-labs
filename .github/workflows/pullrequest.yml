@@ -61,16 +61,16 @@ jobs:
       - name: Install Dependencies
         working-directory: ${{ env.SOURCE_DIR }}
         run: |
-          npm config set registry ${{ secrets.NEXUS_PROXY }}
+          # npm config set registry ${{ secrets.NEXUS_PROXY }}
           npm install
 
       # - run: npm test
       #   working-directory: ${{ env.SOURCE_DIR }}
 
-      - uses: docker://sonarsource/sonar-scanner-cli:latest
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_ROUTE }}
+      # - uses: docker://sonarsource/sonar-scanner-cli:latest
+      #   env:
+      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      #     SONAR_HOST_URL: ${{ secrets.SONAR_ROUTE }}
 
       # https://github.com/redhat-actions/oc-login#readme
       - name: Log in to OpenShift
@@ -84,3 +84,4 @@ jobs:
       - name: Create an ephemeral project
         run: |
           echo $GITHUB_REF
+          printenv
