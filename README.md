@@ -4,6 +4,7 @@
 
 - https://nvie.com/posts/a-successful-git-branching-model/
 - https://docs.microsoft.com/en-us/azure/container-registry/container-registry-image-tag-version
+- https://github.com/redhat-cop/openshift-templates/blob/master/project-requests/create-project.yml
 
 ## Lab 10: Expanded Git Workflow with Container Management
 

@@ -84,6 +84,8 @@ jobs:
       - name: Create an ephemeral project
         run: |
           echo "BRANCH: $GITHUB_HEAD_REF"
-          oc new-project pull-request-$GITHUB_HEAD_REF
+          oc process -f project-template.yaml -p NAMESPACE=pr-$GITHUB_HEAD_REF -p NAMESPACE_DISPLAY_NAME=pr-$GITHUB_HEAD_REF | oc apply -f -
+          oc project pr-$GITHUB_HEAD_REF
           helm dependency update charts/app-chart/.
-          helm install deploy charts/app-chart/. -f charts/app-chart/values-dev.yaml --set buildconfigdocker.ref=$GITHUB_HEAD_REF
+          helm upgrade deploy charts/app-chart/. -f charts/app-chart/values-dev.yaml --set buildconfigdocker.ref=$GITHUB_HEAD_REF
+          oc start-build node-express-mongo-app
