@@ -88,3 +88,4 @@ jobs:
           oc project pr-$GITHUB_HEAD_REF
           helm dependency update charts/app-chart/.
           helm template deploy charts/app-chart/. -f charts/app-chart/values-dev.yaml --set buildconfigdocker.ref=$GITHUB_HEAD_REF | oc apply -f -
+          oc start-build node-express-mongo-app
