@@ -8,7 +8,12 @@
 ## Lab 10: Git Workflow with Container Governance
 
 Pre-reqs:
-- Ensure that you've completed the ACR Integration from Lab 9
+
+  - Ensure that you've completed the ACR Integration from Lab 9
+
+References:
+
+  - 
 
 ### Update Build Workflow with Base Image
 

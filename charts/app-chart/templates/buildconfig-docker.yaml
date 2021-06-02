@@ -1,0 +1,33 @@
+{{- if .Values.buildconfigdocker.enabled }}
+{{- with .Values.buildconfigdocker}}
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  labels:
+    app: {{ $.Values.appName }}
+    app.kubernetes.io/component: {{ $.Values.appName }}
+    app.kubernetes.io/instance: {{ $.Values.appName }}
+  name: {{ $.Values.appName }}
+spec:
+  output:
+    to:
+      kind: ImageStreamTag
+      name: {{ $.Values.appName }}:latest
+  source:
+    type: Git
+      git:
+        uri: {{ $.gitUri}}
+        ref: {{ $.ref}}
+      contextDir: {{ $.contextDir }}
+  strategy:
+    dockerStrategy:
+      from:
+        kind: ImageStreamTag
+        name: {{ .baseImage }}
+        namespace: openshift
+    type: Docker
+  triggers:
+  - type: ConfigChange
+{{- end}}
+{{- end}}

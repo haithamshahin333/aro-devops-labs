@@ -16,7 +16,14 @@ service:
   targetPort: 8080
 
 buildconfig:
+  enabled: false
+  baseImage: nodejs:12-ubi8
+
+buildconfigdocker:
   enabled: true
+  gitUri: https://github.com/haithamshahin333/aro-devops-labs.git
+  contextDir: src
+  ref: lab-10
   baseImage: nodejs:12-ubi8
 
 deployment:
@@ -24,7 +31,7 @@ deployment:
   targetPort: 8080
   replicaCount: 1
   volume:
-    enabled: true
+    enabled: false
     volumeName: test-volume
     claimName: example
     size: 1Gi
