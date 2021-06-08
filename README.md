@@ -248,3 +248,35 @@ Reference List:
   ```
 
   > Info: Confirm the app is up in the console.
+
+### Container Insights with ARO
+
+Reference:
+- https://docs.microsoft.com/en-us/azure/azure-monitor/containers/container-insights-azure-redhat4-setup
+
+1. Run the following ARM Template to deploy a Logs Analytics Workspace in the same Resource Group as the ARO Cluster:
+
+```
+export RG_NAME=<resource group>
+
+az deployment group create \
+  --resource-group $RG_NAME \
+  --name test-deployment-log-analytics \
+  --template-file log-analytics-deployment.yaml
+```
+
+2. Run `az resource list --resource-type Microsoft.OperationalInsights/workspaces -o json -g $RG_NAME` to get the ID of the workspace.
+
+3. Run `az resource list --resource-type Microsoft.RedHatOpenShift/OpenShiftClusters -o json -g $RG_NAME` to get the ID of the cluster.
+
+4. Run the following with the IDs from above:
+
+```
+export azureAroV4ClusterResourceId="/subscriptions/<subscriptionId>/resourceGroups/<resourceGroupName>/providers/Microsoft.RedHatOpenShift/OpenShiftClusters/<clusterName>"
+
+export logAnalyticsWorkspaceResourceId="/subscriptions/<subscriptionId>/resourceGroups/<resourceGroupName>/providers/microsoft.operationalinsights/workspaces/<workspaceName>"
+```
+
+5. Run `curl -o enable-monitoring.sh -L https://aka.ms/enable-monitoring-bash-script` to download the script.
+
+6. Run `bash enable-monitoring.sh --resource-id $azureAroV4ClusterResourceId --workspace-id $logAnalyticsWorkspaceResourceId`
