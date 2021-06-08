@@ -35,20 +35,20 @@
 
 ## Lab 7: Multi-Project Pipeline
 
-TODO
+`git checkout lab-7`
 
 ## Lab 8: Storage
 
-TODO
+`git checkout lab-8`
 
-## Lab 9: Azure Integration (Key Vault, ACR, AAD, Container Insights)
+## Lab 9: Azure Integration (Key Vault, ACR, Container Insights)
 
-TODO
+`git checkout lab-9`
 
-## Lab 10: Operators
+## Lab 10: CI/CD with Multi-Pipeline and Image Governance
 
-TODO
+`git checkout lab-10`
 
-## Lab 11: GitOps with Argo CD
+## Lab 11: Operators and GitOps
 
-TODO
+`git checkout lab-11`
