@@ -9,11 +9,11 @@ function DataEntryForm() {
                         type="text"
                         name="name"
                         id="name"
-                        placeholder="pipeline demo - name"
+                        placeholder="name"
                     />
                 </div>
                 <div>
-                    <input type="text" name="job" id="job" placeholder="pipeline demo - job" />
+                    <input type="text" name="job" id="job" placeholder="job" />
                 </div>
                 <input type="submit" />
             </form>
