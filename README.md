@@ -1,6 +1,6 @@
 # ARO DevOps Labs
 
-## Lab 7: Config Maps and Secrets
+## Lab 7: Dev, Test, Prod Promotion Pipeline
 
 ### Provision Dev, Test, Prod Environments
 
